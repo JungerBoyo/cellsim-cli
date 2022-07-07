@@ -21,10 +21,6 @@ set(GIT_SHA "Unknown" CACHE STRING "SHA of this build")
 set(SUBSTRING "${GIT_SHA}" 0 8 GIT_SHORTENED_SHA)
 #######################
 
-### set up conan ###
-#run_conan()
-####################
-
 ### set up project options ###
 option(ENABLE_TESTS "<'^'>" OFF)
   set(ENABLE_CLANG_TIDY                   OFF)
@@ -36,6 +32,7 @@ option(ENABLE_TESTS "<'^'>" OFF)
 if(ENABLE_TESTS)
   set(ENABLE_CLANG_TIDY "ENABLE_CLANG_TIDY")
   set(ENABLE_COVERAGE "ENABLE_COVERAGE")
+  set(WARNINGS_AS_ERRORS "WARNINGS_AS_ERRORS")
 
   if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
     set(ENABLE_SANITIZER_ADDRESS "ENABLE_SANITIZER_ADDRESS")
@@ -61,6 +58,7 @@ project_options(
 ##############################
 
 ### targets ###
+add_subdirectory(res)
 add_subdirectory(config)
 add_subdirectory(include)
 add_subdirectory(src)
