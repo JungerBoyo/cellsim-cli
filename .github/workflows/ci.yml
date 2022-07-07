@@ -71,7 +71,7 @@ jobs:
           cmake: true
           ninja: true
           conan: true 
-          clangtidy: true
+          clangtidy: 14.0.0
           ccache: true
           gcovr: true
           opencppcoverage: true
