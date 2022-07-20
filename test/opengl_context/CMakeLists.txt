@@ -9,3 +9,8 @@ target_link_system_libraries(opengl_context_TEST
     glfw::glfw
     glad::glad
 )
+
+target_include_directories(opengl_context_TEST 
+  PRIVATE 
+    "${CMAKE_BINARY_DIR}/config"
+)

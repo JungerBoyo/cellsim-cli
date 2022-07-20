@@ -8,5 +8,18 @@ fmt/8.1.1
 [generators]
 cmake_find_package
 
-
+[options]
+glad:shared=False
+glad:fPIC=True
+glad:no_loader=False
+glad:spec=gl
+glad:extensions="''"
+glad:gl_profile=core
+glad:gl_version=None
+glad:gles1_version=None
+glad:gles2_version=3.2
+glad:glsc2_version=None
+glad:egl_version=None
+glad:glx_version=None
+glad:wgl_version=None
 

@@ -7,36 +7,49 @@
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_glfw.h>
+#include <config.hpp>
 
 TEST_CASE("Test Dear ImGui") {
 
   // test glfw initialization
   REQUIRE(glfwInit() == GLFW_TRUE);
   
-  // test window creation
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  constexpr int width{ 640 };
-  constexpr int height{ 480 };
-  constexpr std::string_view glsl_version = "#version 330";
+  // due to cognitive complexity warn
+  // NOLINTBEGIN
+  if constexpr (cellsim::cmake::remote_build == "OFF") {
+    // test window creation
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    constexpr int width{ 640 };
+    constexpr int height{ 480 };
+    constexpr std::string_view glsl_version = "#version 320";
 
-  auto* window = glfwCreateWindow(width, height, "Test Window", nullptr, nullptr); 
-  REQUIRE(window != nullptr);
+    auto* window = glfwCreateWindow(width, height, "Test Window", nullptr, nullptr); 
+    REQUIRE(window != nullptr);
+  
+    glfwMakeContextCurrent(window);
 
-  glfwMakeContextCurrent(window);
+    REQUIRE(gladLoadGLES2Loader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)) != 0);// NOLINT 
 
-  REQUIRE(gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)) != 0);// NOLINT 
+    IMGUI_CHECKVERSION();
+    REQUIRE(ImGui::CreateContext() != nullptr);
 
-  IMGUI_CHECKVERSION();
-  REQUIRE(ImGui::CreateContext() != nullptr);
+    REQUIRE(ImGui_ImplGlfw_InitForOpenGL(window, true));  
+    REQUIRE(ImGui_ImplOpenGL3_Init(glsl_version.data()));
 
-  REQUIRE(ImGui_ImplGlfw_InitForOpenGL(window, true));  
-  REQUIRE(ImGui_ImplOpenGL3_Init(glsl_version.data()));
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+    glfwDestroyWindow(window);
+  } else {
+    REQUIRE(gladLoadGLES2Loader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)) != 0);// NOLINT 
 
-  ImGui_ImplOpenGL3_Shutdown();
-  ImGui_ImplGlfw_Shutdown();
-  ImGui::DestroyContext();
+    IMGUI_CHECKVERSION();
+    REQUIRE(ImGui::CreateContext() != nullptr);
 
-  glfwDestroyWindow(window);
+    ImGui::DestroyContext();
+  }
+  // NOLINTEND
+
   glfwTerminate();
 }

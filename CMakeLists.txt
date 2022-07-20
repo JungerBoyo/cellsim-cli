@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.20)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+option(REMOTE_BUILD "is it a remote CI build" OFF)
+
 ### Add project options ###
 include(FetchContent)
 FetchContent_Declare(_project_options URL https://github.com/aminya/project_options/archive/refs/tags/v0.22.4.zip)
@@ -11,7 +13,7 @@ include(${_project_options_SOURCE_DIR}/Index.cmake)
 ###########################
 
 ### set up project ###
-project(template
+project(cellsim
   VERSION 0.0.1
   DESCRIPTION "C++ template project set up with general structure, tests (catch2), tools and CI"
   HOMEPAGE_URL "https://github.com/JungerBoyo/cpp-template-project"

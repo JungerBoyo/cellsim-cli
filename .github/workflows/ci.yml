@@ -22,16 +22,13 @@ jobs:
         os: 
           - windows-2022
           - windows-2019
-          - ubuntu-22.04
+          - ubuntu-20.04
           - macos-11
         compiler:
           - llvm-14.0.0
-          - gcc-12
         generator:
           - Ninja
         include:
-          - compiler: gcc-12
-            gcov_exe: gcov
           - compiler: llvm-14.0.0
             gcov_exe: "llvm-cov gcov"
           - os: windows-2022
@@ -40,16 +37,6 @@ jobs:
           - os: windows-2019
             compiler: msvc
             generator: 'Visual Studio 16 2019'
-        exclude:
-          - os: windows-2022
-            compiler: gcc-12
-            generator: Ninja
-          - os: windows-2019
-            compiler: gcc-12
-            generator: Ninja
-          - os: macos-11
-            compiler: gcc-12
-            generator: Ninja
 
     steps:
       - uses: actions/checkout@v3
@@ -79,7 +66,7 @@ jobs:
       - name: Cleanup Conan system packages (they are not properly cached)
         run: conan remove -f '*/system'
 
-      - name: configure project
+      - name: configure project 
         run: |
           cmake -S . -B ./build -G "${{ matrix.generator }}" -DGIT_SHA:STRING=${{github.sha}} -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=ON
      

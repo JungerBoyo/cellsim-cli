@@ -13,3 +13,8 @@ target_link_system_libraries(imgui_TEST
     imgui_bindings_INC
     imgui_bindings_IMPL
 )
+
+target_include_directories(imgui_TEST 
+  PRIVATE 
+    "${CMAKE_BINARY_DIR}/config"
+)
