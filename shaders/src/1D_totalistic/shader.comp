@@ -1,0 +1,66 @@
+#version 450 core
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+const int MAX_OPTIONS = 21;
+const int NORMALIZED_MAX_OPTIONS = int(uint(21) >> 2) + int((uint(21) & 0x3) == 0);
+
+layout(std140, binding = 0) uniform BaseConfig {
+  ivec2 map_resolution;
+  int state_count;
+  int read_row; //iteration
+};
+
+layout(std140, binding = 1) uniform Config {
+  int range;
+  bool center_active;
+  ivec4 S[NORMALIZED_MAX_OPTIONS];
+  ivec4 B[NORMALIZED_MAX_OPTIONS];
+};
+
+layout(std430, binding = 2) buffer StateMap {
+  int state_map[];
+};
+
+int accessBirthOption(uint index) {
+  return B[index >> 2][index & 0x3];
+}
+
+int accessSurviveOption(uint index) {
+  return S[index >> 2][index & 0x3];
+}
+
+void main() {
+  int i = int (
+    gl_GlobalInvocationID.z * (gl_NumWorkGroups.x) * (gl_NumWorkGroups.y) +
+    gl_GlobalInvocationID.y * (gl_NumWorkGroups.x) +
+    gl_GlobalInvocationID.x
+  );
+
+  int base_index_read = read_row * map_resolution.x;
+  int base_index_write = ((read_row + 1) % map_resolution.y) * map_resolution.x;
+
+  uint sum = 0;
+  for(int c=-range; c<=range; ++c) {
+    int index = base_index_read + ( i + c );
+    if((c == 0 && center_active) || (index > 0 && index < map_resolution.x)) {
+      if(state_map[index] > 0) {
+        ++sum;  
+      }
+    } 
+  }
+ 
+  int modified_cell_index = base_index_write + i; 
+  if(state_map[modified_cell_index] > 0) {
+    if(accessSurviveOption(sum) == 1) {
+      int new_state = state_map[modified_cell_index] + 1;
+      state_map[modified_cell_index] = new_state > state_count ? new_state - 1 : new_state; 
+    } else {
+      state_map[modified_cell_index] = 0;
+    }
+  } else {
+    if(accessBirthOption(sum) == 1) {
+      state_map[modified_cell_index] = 1;
+    }
+  }
+}

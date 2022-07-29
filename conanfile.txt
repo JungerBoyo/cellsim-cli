@@ -2,8 +2,10 @@
 glad/0.1.36
 imgui/1.88
 glfw/3.3.7
-catch2/2.13.9
+spdlog/1.10.0
+cli11/2.2.0
 fmt/8.1.1
+catch2/2.13.9
 
 [generators]
 cmake_find_package
@@ -13,11 +15,11 @@ glad:shared=False
 glad:fPIC=True
 glad:no_loader=False
 glad:spec=gl
-glad:extensions="''"
+glad:extensions="GL_ARB_gl_spirv"
 glad:gl_profile=core
-glad:gl_version=None
+glad:gl_version=4.5
 glad:gles1_version=None
-glad:gles2_version=3.2
+glad:gles2_version=None
 glad:glsc2_version=None
 glad:egl_version=None
 glad:glx_version=None

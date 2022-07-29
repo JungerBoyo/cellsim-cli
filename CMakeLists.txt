@@ -60,6 +60,7 @@ project_options(
 ##############################
 
 ### targets ###
+add_subdirectory(shaders)
 add_subdirectory(res)
 add_subdirectory(config)
 add_subdirectory(include)

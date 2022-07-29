@@ -14,6 +14,12 @@ Checks: "*,
         -cppcoreguidelines-non-private-member-variables-in-classes,
         -misc-non-private-member-variables-in-classes,
         -misc-definitions-in-headers,
+        -bugprone-exception-escape,
+        -hicpp-uppercase-literal-suffix,
+        -readability-uppercase-literal-suffix,
+        -bugprone-easily-swappable-parameters,
+        -readability-identifier-length,
+        -readability-make-member-function-const,
 "
 WarningsAsErrors: ''
 HeaderFilterRegex: ''

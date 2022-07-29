@@ -406,7 +406,7 @@ static void ImGui_ImplOpenGL3_SetupRenderState(ImDrawData* draw_data, int fb_wid
     glBindVertexArray(vertex_array_object);
 #endif
 
-    // Bind vertex/index buffers and setup attributes for ImDrawVert
+    // bind vertex/index buffers and setup attributes for ImDrawVert
     glBindBuffer(GL_ARRAY_BUFFER, bd->VboHandle);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bd->ElementsHandle);
     glEnableVertexAttribArray(bd->AttribLocationVtxPos);
@@ -537,7 +537,7 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
                 // Apply scissor/clipping rectangle (Y is inverted in OpenGL)
                 glScissor((int)clip_min.x, (int)((float)fb_height - clip_max.y), (int)(clip_max.x - clip_min.x), (int)(clip_max.y - clip_min.y));
 
-                // Bind texture, Draw
+                // bind texture, Draw
                 glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->GetTexID());
 #ifdef IMGUI_IMPL_OPENGL_MAY_HAVE_VTX_OFFSET
                 if (bd->GlVersion >= 320)

@@ -1,5 +1,5 @@
-#ifndef TEMPLATE_CONFIG_HPP
-#define TEMPLATE_CONFIG_HPP
+#ifndef CELLSIM_CONFIG_HPP
+#define CELLSIM_CONFIG_HPP
 
 namespace cellsim::cmake{
   static constexpr std::string_view project_name = "@PROJECT_NAME@";

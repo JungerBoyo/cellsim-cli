@@ -3,3 +3,6 @@ build*/
 *.code-workspace
 format_code.bash
 .conanprofile
+shaders/bin
+shaders/.ninja_log
+.idea

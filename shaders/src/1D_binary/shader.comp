@@ -1,0 +1,59 @@
+#version 450 core
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+const int MAX_PATTERN_COUNT = 16; // 2*range + 1, 2^9 = 512, 512 / 32 = 16 
+
+layout(std140, binding = 0) uniform BaseConfig {
+  ivec2 map_resolution;
+  int state_count;
+  int read_row; //iteration
+};
+
+layout(std140, binding = 1) uniform Config {
+  int range; // lim = 4
+  uint pattern_match_code[MAX_PATTERN_COUNT];
+};
+
+layout(std430, binding = 2) buffer StateMap {
+  int state_map[];
+};
+
+bool isSet(uint i) {
+  return ( pattern_match_code[i >> 5 /* /32 */] & uint(1 << (i & uint(0x1F)/* % 32*/)) ) > uint(0) ? true : false;
+}
+
+void main() {
+  int i = int (
+    gl_GlobalInvocationID.z * (gl_NumWorkGroups.x) * (gl_NumWorkGroups.y) +
+    gl_GlobalInvocationID.y * (gl_NumWorkGroups.x) +
+    gl_GlobalInvocationID.x
+  );
+
+  int base_index_read = read_row * map_resolution.x;
+  int base_index_write = ((read_row + int(1)) % map_resolution.y) * map_resolution.x;
+
+  uint pattern_bitset = uint(0);
+  for(int c=-range; c<=range; ++c) {
+    int index = base_index_read + ( i + c );
+    if(index > 0 && index < map_resolution.x) {
+      if(state_map[index] > 0) {
+        pattern_bitset |= ( uint(1) << (c + range) );  
+      }
+    } 
+  }
+
+  int modified_cell_index = base_index_write + i; 
+  if(state_map[modified_cell_index] > 0) {
+    if(isSet(pattern_bitset)) {
+      int new_state = state_map[modified_cell_index] + int(1);
+      state_map[modified_cell_index] = new_state > state_count ? new_state - 1 : new_state; 
+    } else {
+      state_map[modified_cell_index] = 0;   
+    }
+  } else {
+    if(isSet(pattern_bitset)) {
+      state_map[modified_cell_index] = 1;
+    }
+  }
+}
