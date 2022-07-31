@@ -12,13 +12,27 @@ env:
   CONAN_SYSREQUIRES_MODE: enabled
   CONAN_USER_HOME: "${{ github.workspace }}/conan-cache"
   CONAN_USER_HOME_SHORT: "${{ github.workspace }}/conan-cache/short"
+  CodecovToken: a4756e85-b788-46f1-ba0e-47f15400517c
 
 jobs:
-  build-test: 
+  upload-coverage:
+    runs-on: ubuntu-latest
+    name: upload coverage
+    steps:
+      - uses: actions/checkout@v3
+      - name: upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./
+          files: coverage.xml
+          name: codecov-umbrella
+          verbose: true
+
+  build-test:
     runs-on: ${{ matrix.os }}
     strategy: 
       fail-fast: false
-      matrix: # { win + [clang,msvc], unix + [clang,gcc], macos + [clang] }
+      matrix: # { win + [clang,msvc], unix + [clang], macos + [clang] }
         os: 
           - windows-2022
           - windows-2019
@@ -60,48 +74,17 @@ jobs:
           conan: true 
           clangtidy: 14.0.0
           ccache: true
-          gcovr: true
-          opencppcoverage: true
 
       - name: Cleanup Conan system packages (they are not properly cached)
         run: conan remove -f '*/system'
 
       - name: configure project 
         run: |
-          cmake -S . -B ./build -G "${{ matrix.generator }}" -DGIT_SHA:STRING=${{github.sha}} -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=ON
+          cmake -S . -B ./build -G "${{ matrix.generator }}" -DGIT_SHA:STRING=${{github.sha}} -DCMAKE_BUILD_TYPE=Release
      
       - name: build project
         run: cmake --build ./build
 
-      - name: run CTest and coverage (Unix)
-        if: runner.os != 'Windows'
-        working-directory: ./build
-        run: |
-          ctest --verbose
-          gcovr --delete --root ../ --print-summary --xml-pretty --xml coverage.xml . --gcov-executable '${{ matrix.gcov_exe }}'
-
-      - name: run CTest and coverage (Windows)
-        if: runner.os == 'Windows'
-        working-directory: ./build
-        run: |
-          OpenCppCoverage.exe --export_type cobertura:coverage.xml --cover_children -- ctest -C Debug --verbose
-
-      - name: configure Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          directory: build
-          files: coverage.xml
-          name: codecov-umbrella
-          verbose: true
-
-      - name: configure release
-        if: startsWith(github.ref, 'refs/tags') 
-        run: cmake -S . -B ./build -G "${{ matrix.generator }}" -DGIT_SHA:STRING=${{github.sha}} -DCMAKE_BUILD_TYPE=Release
-
-      - name: build project release
-        if: startsWith(github.ref, 'refs/tags')
-        run: cmake --build ./build
-      
       - name: cpack project
         if: startsWith(github.ref, 'refs/tags')
         working-directory: ./build

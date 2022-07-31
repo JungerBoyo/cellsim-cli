@@ -1,7 +1,7 @@
 #ifndef CELLSIM_CONFIG_HPP
 #define CELLSIM_CONFIG_HPP
 
-namespace cellsim::cmake{
+namespace CSIM::cmake::config{
   static constexpr std::string_view project_name = "@PROJECT_NAME@";
   static constexpr std::string_view project_version = "@PROJECT_VERSION@";
   static constexpr std::string_view remote_build = "@REMOTE_BUILD@";
