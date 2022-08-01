@@ -1,4 +1,4 @@
-[![ci](https://github.com/JungerBoyo/cpp-template-project/actions/workflows/ci.yml/badge.svg)](https://github.com/JungerBoyo/cpp-template-project/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/JungerBoyo/cpp-template-project/branch/main/graph/badge.svg?token=6WJJAODLPM)](https://codecov.io/gh/JungerBoyo/cpp-template-project)
+[![ci](https://github.com/JungerBoyo/cpp-template-project/actions/workflows/ci.yml/badge.svg)](https://github.com/JungerBoyo/CellSimRemake/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/JungerBoyo/CellSimRemake/branch/main/graph/badge.svg?token=18QM99KEWO)](https://codecov.io/gh/JungerBoyo/CellSimRemake)
 
 # CellSim 
