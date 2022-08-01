@@ -14,13 +14,11 @@ add_test(NAME run_tests COMMAND catch2_main)
 
 add_executable(catch2_main config.cpp)
 
-add_subdirectory(hello_world)
 add_subdirectory(opengl_context)
 add_subdirectory(imgui)
 
 target_link_libraries(catch2_main
   PRIVATE
-    hello_world_TEST
     opengl_context_TEST
     imgui_TEST
 )

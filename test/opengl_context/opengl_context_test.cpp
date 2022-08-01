@@ -2,26 +2,23 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <project_config/config.hpp>
+#include "shconfig.hpp"
 
 TEST_CASE("Test opengl context(GLAD + GLFW3)") {
+  // test glfw initialization
+  REQUIRE(glfwInit() == GLFW_TRUE);
 
-  if constexpr (cellsim::cmake::remote_build == "OFF") {
-    // test glfw initialization
-    REQUIRE(glfwInit() == GLFW_TRUE);
-  
-    // test window creation
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4); //NOLINT 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5); //NOLINT
-    constexpr int width = 640;
-    constexpr int height = 480;
-    auto* window = glfwCreateWindow(width, height, "Test Window", nullptr, nullptr); 
-    REQUIRE(window != nullptr);
+  // test window creation
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, CSIM::shconfig::GLVERSION_MAJOR);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, CSIM::shconfig::GLVERSION_MINOR);
+  constexpr int width = 640;
+  constexpr int height = 480;
+  auto* window = glfwCreateWindow(width, height, "Test Window", nullptr, nullptr);
+  REQUIRE(window != nullptr);
 
-    glfwMakeContextCurrent(window);
-    REQUIRE(gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)) != 0);// NOLINT 
+  glfwMakeContextCurrent(window);
+  REQUIRE(gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)) != 0);// NOLINT
 
-    glfwDestroyWindow(window);
-   
-    glfwTerminate();
-  } 
+  glfwDestroyWindow(window);
+  glfwTerminate();
 }

@@ -4,7 +4,7 @@
 #include <cinttypes>
 #include <string_view>
 
-namespace CSIM::shconfig{
+namespace CSIM::shconfig {
 	static constexpr std::int32_t GLVERSION_MAJOR { 4 };
 	static constexpr std::int32_t GLVERSION_MINOR { 5 };
 	/// render

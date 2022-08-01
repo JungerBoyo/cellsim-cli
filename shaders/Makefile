@@ -26,7 +26,7 @@ $(SRC_DIR)/1D_totalistic/shader.comp:
 $(SRC_DIR)/render_shader/shader.vert:
 $(SRC_DIR)/render_shader/shader.frag:
 
-$(BIN_DIR)/1D_binary $(BIN_DIR)/1D_totalistic $(BIN_DIR)/render_shader: $(BIN_DIR))
+$(BIN_DIR)/1D_binary $(BIN_DIR)/1D_totalistic $(BIN_DIR)/render_shader: $(BIN_DIR)
 	mkdir $@
 
 $(BIN_DIR):

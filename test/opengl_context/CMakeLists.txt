@@ -10,7 +10,7 @@ target_link_system_libraries(opengl_context_TEST
     glad::glad
 )
 
-target_include_directories(opengl_context_TEST 
-  PRIVATE 
-    "${CMAKE_BINARY_DIR}/config"
+target_include_directories(opengl_context_TEST
+  PRIVATE
+    "${CMAKE_BINARY_DIR}/shaders"
 )

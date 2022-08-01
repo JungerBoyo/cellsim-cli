@@ -6,3 +6,4 @@ format_code.bash
 shaders/.ninja_log
 .idea
 code_cov.bash
+Dockerfile
