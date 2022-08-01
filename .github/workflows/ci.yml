@@ -80,7 +80,7 @@ jobs:
 
       - name: configure project 
         run: |
-          cmake -S . -B ./build -G "${{ matrix.generator }}" -DGIT_SHA:STRING=${{github.sha}} -DCMAKE_BUILD_TYPE=Release
+          cmake -S . -B ./build -G "${{ matrix.generator }}" -DGIT_SHA:STRING=${{github.sha}} -DCMAKE_BUILD_TYPE=Release -DREMOTE_BUILD=ON
      
       - name: build project
         run: cmake --build ./build
