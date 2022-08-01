@@ -71,7 +71,9 @@ add_subdirectory(src)
 ###############
 
 ### MSVC specific ###
-if(MSVC AND ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+if(MSVC)
+  message(STATUS "MSVC detected")
+  set(CMAKE_BUILD_TYPE "Debug")
   set(all_targets)
   get_all_targets(all_targets ${CMAKE_CURRENT_SOURCE_DIR})
   set_target_properties(${all_targets} PROPERTIES VS_DEBUGGER_ENVIRONMENT "PATH=$(VC_ExecutablePath_x64);%PATH%")

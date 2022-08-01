@@ -55,7 +55,8 @@ CSIM::Renderer::Renderer(std::shared_ptr<const Shader> render_shader)
 
 void CSIM::Renderer::setColors(const std::vector<Vec4<float>>& colors) {
 	const std::size_t colors_size =
-			std::clamp(colors.size(), 0ul, shconfig::MAX_COLORS - 1);
+			std::clamp(colors.size(), static_cast<std::size_t>(0),
+								 shconfig::MAX_COLORS - 1);
 	std::copy_n(colors.begin(), colors_size, colors_.begin());
 
 	glNamedBufferSubData(
