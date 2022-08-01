@@ -1,7 +1,6 @@
 #include <catch2/catch.hpp>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <project_config/config.hpp>
 #include "shconfig.hpp"
 
 TEST_CASE("Test opengl context(GLAD + GLFW3)") {
