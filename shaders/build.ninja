@@ -12,7 +12,8 @@ rule glsl
 rule mkdir
   command = mkdir $out
 
-build $BIN_DIR/1D_binary $BIN_DIR/1D_totalistic $BIN_DIR/render_shader: mkdir
+build $BIN_DIR: mkdir
+build $BIN_DIR/1D_binary $BIN_DIR/1D_totalistic $BIN_DIR/render_shader: mkdir | $BIN_DIR
 
 build $BIN_DIR/1D_binary/comp.spv: glsl $SRC_DIR/1D_binary/shader.comp         | $BIN_DIR/1D_binary
 build $BIN_DIR/1D_totalistic/comp.spv: glsl $SRC_DIR/1D_totalistic/shader.comp | $BIN_DIR/1D_totalistic

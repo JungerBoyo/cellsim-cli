@@ -11,16 +11,9 @@ catch2/2.13.9
 cmake_find_package
 
 [options]
-glad:shared=False
-glad:no_loader=False
 glad:spec=gl
 glad:extensions="GL_ARB_gl_spirv"
 glad:gl_profile=core
 glad:gl_version=4.5
-glad:gles1_version=None
-glad:gles2_version=None
-glad:glsc2_version=None
-glad:egl_version=None
-glad:glx_version=None
-glad:wgl_version=None
+
 
