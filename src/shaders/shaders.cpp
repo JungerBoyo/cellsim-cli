@@ -4,9 +4,9 @@
 
 #include "shaders/shaders.hpp"
 
+#include <fmt/format.h>
 #include <fstream>
 #include <glad/glad.h>
-#include <fmt/format.h>
 
 /// Shader impl ///
 
@@ -26,7 +26,7 @@ std::vector<char> CSIM::Shader::parseShader(const std::filesystem::path &path) {
 
 	if (!stream.good()) {
 		throw std::runtime_error(fmt::format(
-				"failed to create stream from shader file {}", path.c_str()));
+				"failed to create stream from shader file {}", path.string()));
 	}
 
 	const auto size = static_cast<std::size_t>(stream.tellg());
@@ -47,7 +47,7 @@ void CSIM::Shader::destroy() noexcept {
 /// VFShader impl ///
 
 CSIM::VFShader::VFShader(const std::filesystem::path &vsh_path,
-				 const std::filesystem::path &fsh_path)
+												 const std::filesystem::path &fsh_path)
 		: vsh_id_(glCreateShader(GL_VERTEX_SHADER)),
 			fsh_id_(glCreateShader(GL_FRAGMENT_SHADER)) {
 	const auto vsh_binary = parseShader(vsh_path);

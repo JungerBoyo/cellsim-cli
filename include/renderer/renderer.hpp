@@ -5,23 +5,24 @@
 #ifndef CELLSIM_RENDERER_HPP
 #define CELLSIM_RENDERER_HPP
 
+#include "utils/vecs.hpp"
 #include <cellmap/cellmap.hpp>
 #include <shaders/shaders.hpp>
-#include "utils/vecs.hpp"
+#include <shconfig.hpp>
 
-#include <memory>
 #include <array>
-#include <span>
+#include <memory>
+#include <vector>
 
 namespace CSIM {
 
 using namespace utils;
 
 struct Renderer {
-	std::uint32_t vbo_id_							{ 0 };
-	std::uint32_t vao_id_							{ 0 };
-	std::uint32_t view_config_ubo_id_	{ 0 };
-	std::uint32_t colors_ubo_id_			{ 0 };
+	std::uint32_t vbo_id_{0};
+	std::uint32_t vao_id_{0};
+	std::uint32_t view_config_ubo_id_{0};
+	std::uint32_t colors_ubo_id_{0};
 
 	std::shared_ptr<const Shader> render_shader_{nullptr};
 	float time_step_{0.f};
@@ -35,16 +36,12 @@ struct Renderer {
 	ViewConfig view_config_{};
 	std::array<Vec4<float>, shconfig::MAX_COLORS> colors_;
 
-	static constexpr std::array<float, 8> QUAD {{
-		-.5f,-.5f,
-		-.5f, .5f,
-		 .5f,-.5f,
-		 .5f, .5f
-	}};
+	static constexpr std::array<float, 8> QUAD{
+			{-.5f, -.5f, -.5f, .5f, .5f, -.5f, .5f, .5f}};
 
 	explicit Renderer(std::shared_ptr<const Shader> render_shader);
 
-	void setColors(std::span<Vec4<float>> colors);
+	void setColors(const std::vector<Vec4<float>>& colors);
 
 	void updateView(Vec2<float> offset_vec, float scale_vec) noexcept;
 

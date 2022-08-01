@@ -44,6 +44,6 @@ struct CShader : public Shader {
 	void destroy() noexcept override;
 };
 
-}
+} // namespace CSIM
 
 #endif // CELLSIM_SHADERS_HPP

@@ -7,3 +7,4 @@ shaders/.ninja_log
 .idea
 code_cov.bash
 Dockerfile
+format.bash

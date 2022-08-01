@@ -10,7 +10,7 @@ rule glsl
   command = $GLSL $GLSL_FLAGS $in -o $out && $GLSL_OPT $GLSL_OPT_FLAGS $out -o $out
 
 rule mkdir
-  command = mkdir $out
+  command = mkdir -p $out
 
 build $BIN_DIR: mkdir
 build $BIN_DIR/1D_binary $BIN_DIR/1D_totalistic $BIN_DIR/render_shader: mkdir | $BIN_DIR

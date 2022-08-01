@@ -4,6 +4,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(REMOTE_BUILD "is it a remote CI build" OFF)
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release")
+endif()
 
 ### Add project options ###
 include(FetchContent)
@@ -68,7 +71,7 @@ add_subdirectory(src)
 ###############
 
 ### MSVC specific ###
-if(MSVC)
+if(MSVC AND ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   set(all_targets)
   get_all_targets(all_targets ${CMAKE_CURRENT_SOURCE_DIR})
   set_target_properties(${all_targets} PROPERTIES VS_DEBUGGER_ENVIRONMENT "PATH=$(VC_ExecutablePath_x64);%PATH%")
