@@ -12,7 +12,6 @@ cmake_find_package
 
 [options]
 glad:shared=False
-glad:fPIC=True
 glad:no_loader=False
 glad:spec=gl
 glad:extensions="GL_ARB_gl_spirv"
