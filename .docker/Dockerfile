@@ -12,7 +12,7 @@ ENV CONAN_SYSREQUIRES_MODE enabled
 RUN dnf install -y cmake ccache clang llvm libasan libubsan python3-pip python3.11 spirv-tools glslang vim git
 RUN dnf install -y libXext-devel libXfixes-devel libXrender-devel libICE-devel libSM-devel libXt-devel libXmu-devel libXi-devel libXpm-devel libXaw libXaw-devel libXtst-devel libXcursor-devel libXrandr-devel libXcomposite-devel libXdamage-devel libXScrnSaver-devel libXinerama-devel libXres-devel libXv-devel libXvMC-devel libXxf86vm-devel libuuid-devel xorg-x11-xtrans-devel xkeyboard-config-devel xcb-util-wm-devel xcb-util-renderutil-devel xcb-util-keysyms-devel xcb-util-image-devel xcb-util-devel libxkbfile-devel libfontenc-devel libXdmcp-devel
 RUN pip install conan
-# install cellsim
+# setup and build cellsim
 RUN git clone https://github.com/JungerBoyo/CellSimRemake
 RUN cd CellSimRemake && cmake -S . -B build/ -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug -DENABLE_TESTS=ON && \
     cmake --build build/ -j

@@ -47,16 +47,32 @@ if(ENABLE_TESTS)
   endif()
 endif()
 
-project_options(
-  ENABLE_CACHE
-  ${ENABLE_CLANG_TIDY}
-  ENABLE_VS_ANALYSIS
-  ENABLE_CONAN
-  ${ENABLE_COVERAGE}
-  ${ENABLE_SANITIZER_ADDRESS}
-  ${ENABLE_SANITIZER_UNDEFINED_BEHAVIOR}
-  ${WARNINGS_AS_ERRORS}
-)
+option(UBUNTU_PROFILE "flag indicating if to use conan profile specifically for ubuntu" OFF)
+
+if(UBUNTU_PROFILE)
+  project_options(
+    ENABLE_CACHE
+    ${ENABLE_CLANG_TIDY}
+    ENABLE_VS_ANALYSIS
+    ENABLE_CONAN
+    ${ENABLE_COVERAGE}
+    ${ENABLE_SANITIZER_ADDRESS}
+    ${ENABLE_SANITIZER_UNDEFINED_BEHAVIOR}
+    ${WARNINGS_AS_ERRORS}
+    CONAN_PROFILE "${CMAKE_CURRENT_SOURCE_DIR}/ubuntu_conan.profile"
+  )
+else()
+  project_options(
+    ENABLE_CACHE
+    ${ENABLE_CLANG_TIDY}
+    ENABLE_VS_ANALYSIS
+    ENABLE_CONAN
+    ${ENABLE_COVERAGE}
+    ${ENABLE_SANITIZER_ADDRESS}
+    ${ENABLE_SANITIZER_UNDEFINED_BEHAVIOR}
+    ${WARNINGS_AS_ERRORS}
+  )
+endif()
 ##############################
 
 ### targets ###
