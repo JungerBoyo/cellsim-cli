@@ -31,26 +31,6 @@ CSIM::Rule::Rule(std::shared_ptr<RuleConfig> rule_config)
 	glBindBufferBase(GL_UNIFORM_BUFFER, shconfig::CONFIG_UBO_BINDING_LOCATION,
 									 config_ubo_id_);
 
-	// NOLINTBEGIN
-	GLint active_resources{0};
-	glGetProgramInterfaceiv(rule_config_->getShader()->program_id_,
-													GL_UNIFORM_BLOCK, GL_ACTIVE_RESOURCES,
-													&active_resources);
-	for (auto i = 0; i < active_resources; ++i) {
-		GLsizei args[256];
-		constexpr GLsizei buf_size = 256;
-		std::fill(args, args + buf_size, 0);
-		GLsizei len{0};
-		GLenum prop[] = {GL_BUFFER_DATA_SIZE};
-
-		glGetProgramResourceiv(rule_config_->getShader()->program_id_,
-													 GL_UNIFORM_BLOCK, i, 1, prop, buf_size, &len, args);
-
-		int a = 5;
-	}
-
-	// NOLINTEND
-
 	rule_config_->getShader()->unbind();
 }
 void CSIM::Rule::setBaseConfig(BaseConfig config,

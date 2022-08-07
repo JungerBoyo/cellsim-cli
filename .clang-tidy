@@ -23,6 +23,7 @@ Checks: "*,
         -cppcoreguidelines-pro-type-member-init,
         -hicpp-member-init, 
         -cppcoreguidelines-pro-type-reinterpret-cast,
+        -readability-convert-member-functions-to-static,
 "
 WarningsAsErrors: ''
 HeaderFilterRegex: ''

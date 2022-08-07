@@ -11,6 +11,10 @@ namespace CSIM {
 
 using namespace utils;
 
+enum class RuleType {
+	BASIC_1D
+};
+
 struct Rule { // NOLINT no need for move constructor/assignment
 	std::uint32_t base_config_ubo_id_{0};
 	std::uint32_t config_ubo_id_{0};
@@ -25,6 +29,8 @@ struct Rule { // NOLINT no need for move constructor/assignment
 	std::shared_ptr<RuleConfig> rule_config_;
 
 	explicit Rule(std::shared_ptr<RuleConfig> rule_config);
+
+	[[nodiscard]] virtual RuleType ruleType() const = 0;
 
 	void setBaseConfig(BaseConfig config, bool update_iteration = false) noexcept;
 	[[nodiscard]] auto iteration() {
@@ -43,6 +49,8 @@ struct Rule { // NOLINT no need for move constructor/assignment
 
 struct Rule1D : public Rule {
 	explicit Rule1D(std::shared_ptr<RuleConfig> rule_config);
+
+	[[nodiscard]] RuleType ruleType() const override { return RuleType::BASIC_1D; }
 
 	void step(const CellMap &cell_map) noexcept override;
 

@@ -12,7 +12,6 @@ target_link_system_libraries(imgui_TEST
     glfw::glfw
     glad::glad
     fmt::fmt
-    imgui_bindings_INC
     imgui_bindings_IMPL
 )
 
