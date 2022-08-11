@@ -13,8 +13,14 @@ int main() {
 		constexpr std::string_view title = "cellsim";
 		constexpr int width{640};
 		constexpr int height{480};
+
+#ifdef GLFW_DEBUG
 		CSIM::Window window(width, height, title,
 										    [](int, const char *message) { spdlog::error("[glfw] {}", message); });
+#elif
+		CSIM::Window window(width, height, title, nullptr);
+#endif
+
 		window.loadGL();
 
 		CSIM::App app(window);

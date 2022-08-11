@@ -5,6 +5,16 @@ find_package(CLI11  REQUIRED)
 find_package(fmt    REQUIRED)
 find_package(imgui  REQUIRED)
 
+option(GL_DEBUG_ENABLE "enables OpenGL debug output" OFF)
+if(GL_DEBUG_ENABLE)
+  add_compile_definitions(GL_DEBUG)
+endif()
+
+option(GLFW_DEBUG_ENABLE "enables glfw debug output" OFF)
+if(GLFW_DEBUG_ENABLE)
+  add_compile_definitions(GLFW_DEBUG)
+endif()
+
 add_subdirectory(cli_emulator)
 add_subdirectory(window)
 add_subdirectory(imgui)
@@ -12,8 +22,6 @@ add_subdirectory(shaders)
 add_subdirectory(cellmap)
 add_subdirectory(renderer)
 add_subdirectory(rules)
-
-add_compile_definitions(GL_DEBUG)
 
 add_library(app_IMPL STATIC app.cpp)
 target_link_libraries(app_IMPL
@@ -24,7 +32,7 @@ target_link_libraries(app_IMPL
     imgui_utils_IMPL
 )
 
-if(GL_DEBUG)
+if(GL_DEBUG_ENABLE)
   target_link_system_libraries(app_IMPL
     PRIVATE
       imgui::imgui
