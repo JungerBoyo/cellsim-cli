@@ -5,9 +5,9 @@
 
 #ifdef GL_DEBUG
 #include <glad/glad.h>
+#include <spdlog/spdlog.h>
 #endif
 
-#include <spdlog/spdlog.h>
 #include <imgui/imgui_utils.hpp>
 #include <imgui.h>
 #include <rules/rule_info_window.hpp>
