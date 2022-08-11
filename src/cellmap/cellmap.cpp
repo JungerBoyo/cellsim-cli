@@ -57,7 +57,8 @@ void CSIM::CellMap::seed(std::size_t x, std::size_t y, std::size_t range, bool r
 			begin_y = std::clamp(static_cast<std::int64_t>(y) - static_cast<std::int64_t>(range),
 													 static_cast<std::int64_t>(0),
 													 static_cast<std::int64_t>(height_));
-			end_y = std::clamp(static_cast<std::int64_t>(y) + static_cast<std::int64_t>(range) + 1, 0l,
+			end_y = std::clamp(static_cast<std::int64_t>(y) + static_cast<std::int64_t>(range) + 1,
+												 static_cast<std::int64_t>(0),
 												 static_cast<std::int64_t>(height_));
 		} else {
 			begin_x = (static_cast<std::int64_t>(x) - static_cast<std::int64_t>(range)) %
