@@ -48,11 +48,14 @@ void CSIM::CellMap::seed(std::size_t x, std::size_t y, std::size_t range, bool r
 		std::int64_t begin_y{ 0 };
 		std::int64_t end_y{ 0 };
 		if (clip)	{
-			begin_x = std::clamp(static_cast<std::int64_t>(x) - static_cast<std::int64_t>(range), 0l,
+			begin_x = std::clamp(static_cast<std::int64_t>(x) - static_cast<std::int64_t>(range),
+													 static_cast<std::int64_t>(0),
 													 static_cast<std::int64_t>(width_));
-			end_x = std::clamp(static_cast<std::int64_t>(x) + static_cast<std::int64_t>(range) + 1, 0l,
+			end_x = std::clamp(static_cast<std::int64_t>(x) + static_cast<std::int64_t>(range) + 1,
+												 static_cast<std::int64_t>(0),
 												 static_cast<std::int64_t>(width_));
-			begin_y = std::clamp(static_cast<std::int64_t>(y) - static_cast<std::int64_t>(range), 0l,
+			begin_y = std::clamp(static_cast<std::int64_t>(y) - static_cast<std::int64_t>(range),
+													 static_cast<std::int64_t>(0),
 													 static_cast<std::int64_t>(height_));
 			end_y = std::clamp(static_cast<std::int64_t>(y) + static_cast<std::int64_t>(range) + 1, 0l,
 												 static_cast<std::int64_t>(height_));
@@ -83,10 +86,18 @@ void CSIM::CellMap::seed(std::size_t x, std::size_t y, std::size_t range, bool r
 				std::int64_t y0{ 0 };
 				std::int64_t y1{ 0 };
 				if(clip) {
-					x0 = std::clamp(( p_x + static_cast<std::int64_t>(x)), 0l, static_cast<std::int64_t>(width_));
-					x1 = std::clamp((-p_x + static_cast<std::int64_t>(x)), 0l, static_cast<std::int64_t>(width_));
-					y0 = std::clamp(( p_y + static_cast<std::int64_t>(y)), 0l, static_cast<std::int64_t>(height_));
-					y1 = std::clamp((-p_y + static_cast<std::int64_t>(y)), 0l, static_cast<std::int64_t>(height_));
+					x0 = std::clamp(( p_x + static_cast<std::int64_t>(x)),
+													  static_cast<std::int64_t>(0),
+												  	static_cast<std::int64_t>(width_));
+					x1 = std::clamp((-p_x + static_cast<std::int64_t>(x)),
+													static_cast<std::int64_t>(0),
+													static_cast<std::int64_t>(width_));
+					y0 = std::clamp(( p_y + static_cast<std::int64_t>(y)),
+													static_cast<std::int64_t>(0),
+													static_cast<std::int64_t>(height_));
+					y1 = std::clamp((-p_y + static_cast<std::int64_t>(y)),
+													static_cast<std::int64_t>(0),
+													static_cast<std::int64_t>(height_));
 				} else {
 					x0 = ( p_x + static_cast<std::int64_t>(x)) % static_cast<std::int64_t>(width_);
 					x1 = (-p_x + static_cast<std::int64_t>(x)) % static_cast<std::int64_t>(width_);
@@ -129,8 +140,8 @@ void CSIM::CellMap::extend(std::size_t new_width, std::size_t new_height, bool p
 			glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 			glGetNamedBufferSubData(state_map_ssbo_id_, 0, static_cast<GLsizei>(width_ * height_),
 															cell_states_.data());
-			for (std::size_t y=0; y<std::clamp(height_, 0ul, new_height); ++y) {
-				for (std::size_t x=0; x<std::clamp(width_, 0ul, new_width); ++x) {
+			for (std::size_t y=0; y<std::clamp(height_, static_cast<std::size_t>(0), new_height); ++y) {
+				for (std::size_t x=0; x<std::clamp(width_, static_cast<std::size_t>(0), new_width); ++x) {
 					new_cell_states.at(x + y * new_width) = cell_states_.at(x + y * width_);
 				}
 			}
