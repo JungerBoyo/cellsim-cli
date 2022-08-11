@@ -6,6 +6,8 @@
 #include <glad/glad.h>
 #include <spdlog/spdlog.h>
 #include <imgui/imgui_utils.hpp>
+#include <imgui.h>
+#include <rules/rule_info_window.hpp>
 #include <GLFW/glfw3.h>
 
 /// TODO add clear color to cellmap
@@ -42,10 +44,8 @@ CSIM::App::App(Window& window)
 				}
 			}, nullptr);
 #endif
-	glClearColor(.0f, .0f, .0f, 1.f); // NOLINT
 	ImGui::Init(window_.native());
 
-	cell_map_.seed(0, 0); // NOLINT
 	cli_emulator_.setCLI();
 }
 
@@ -61,11 +61,88 @@ void CSIM::App::destroy() {
 	}
 }
 
+void CSIM::App::updateRuleConfig(std::shared_ptr<RuleConfig> config, RuleType rule_type) {
+	if(rule_config_ != nullptr)	{
+		rule_config_->destroy();
+	}
+	rule_config_ = std::move(config);
+
+	if(rule_ == nullptr || rule_->ruleType() != rule_type)	{
+		if(rule_ != nullptr) {
+			rule_->destroy();
+		}
+		rule_ = std::make_shared<Rule1D>(rule_config_);
+	} else {
+		rule_->setRuleConfig(rule_config_);
+	}
+}
+
+static auto hexColorToFloatColor(std::uint32_t color) {
+	constexpr std::uint32_t MASK{0xFF};
+	constexpr float DIVIDER{255.f};
+	return CSIM::utils::Vec4<float>{
+			static_cast<float>((color >> 24u)) / DIVIDER,				 // NOLINT
+			static_cast<float>((color >> 16u) & MASK) / DIVIDER, // NOLINT
+			static_cast<float>((color >> 8u) & MASK) / DIVIDER,	 // NOLINT
+			static_cast<float>((color >> 0u) & MASK) / DIVIDER	 // NOLINT
+	};
+}
+
+void CSIM::App::parseCommand() {
+	if(cli_emulator_.config.cmd_set->parsed()) {
+		if(cli_emulator_.config.subcmd_grid->parsed()) {
+			const auto args = cli_emulator_.config.options_grid;
+			if (!args.hex_color_option->empty()) {
+				renderer_.setGridColor(hexColorToFloatColor(args.hex_color));
+			} if (!args.toggle_option->empty()) {
+				renderer_.toggleGrid();
+			}
+		} else if(cli_emulator_.config.subcmd_counter->parsed()) {
+			step_size_ = static_cast<std::int32_t>(cli_emulator_.config.option_counter);
+			frame_counter_ = 0;
+		} else if(cli_emulator_.config.subcmd_cellmap->parsed()) {
+			const auto args = cli_emulator_.config.options_cellmap;
+			cell_map_.extend(args.width, args.height, args.preserve_contents);
+		} else if(cli_emulator_.config.subcmd_colors->parsed()) {
+			// zero state is always black
+			auto& arg_colors = cli_emulator_.config.option_colors;
+			constexpr std::uint32_t BLACK_NON_TRANSPARENT_HEX{0xFF};
+			arg_colors.insert(arg_colors.begin(), BLACK_NON_TRANSPARENT_HEX);
+
+			std::vector<Vec4<float>> colors(arg_colors.size());
+			std::transform(arg_colors.cbegin(), arg_colors.cend(), colors.begin(), hexColorToFloatColor);
+
+			renderer_.setColors(colors);
+		} else if(cli_emulator_.config.subcmd_rule->parsed()) {
+			if(cli_emulator_.config.subsubcmd_rule_1dtotalistic->parsed()) {
+				const auto& rule_args = cli_emulator_.config.options_1d_totalistic;
+				updateRuleConfig(std::make_shared<RuleConfig1DTotalistic>(
+						rule_args.range,
+						rule_args.center_active,
+						rule_args.survival_conditions,
+						rule_args.birth_conditions,
+						std::make_shared<CShader>("shaders/bin/1D_totalistic/comp.spv")
+				), RuleType::BASIC_1D);
+			} else if(cli_emulator_.config.subsubcmd_rule_1dbinary->parsed()) {
+				const auto& rule_args = cli_emulator_.config.options_1d_binary;
+				updateRuleConfig(std::make_shared<RuleConfig1DBinary>(
+						rule_args.range,
+						rule_args.pattern_match_code,
+						std::make_shared<CShader>("shaders/bin/1D_binary/comp.spv")
+				), RuleType::BASIC_1D);
+			}
+		}
+	} else if(cli_emulator_.config.cmd_clear->parsed()) {
+		cli_emulator_.clear();
+	} else if(cli_emulator_.config.cmd_seed->parsed()) {
+		const auto args = cli_emulator_.config.options_seed;
+		cell_map_.seed(args.x, args.y, args.range, args.round, args.clip);
+	}
+}
+
 void CSIM::App::run() {
 	while(!window_.shouldClose()) {
 		window_.pollEvents();
-
-		glClear(GL_COLOR_BUFFER_BIT);
 
 		auto frame_time = window_.getTime();
 		renderer_.time_step_ = frame_time - last_frame_time_;
@@ -74,18 +151,55 @@ void CSIM::App::run() {
 		const auto[width, height] = window_.getWindowSize();
 		renderer_.draw({width, height}, cell_map_);
 
-		if(rule_ && rule_config_)	{
+		ImGui::BeginFrameCustom();
+		if(rule_ != nullptr && rule_config_ != nullptr)	{
 			if(++frame_counter_; frame_counter_ == step_size_) {
-				rule_->step(cell_map_);
+				rule_->step(cell_map_, static_cast<std::int32_t>(renderer_.colorCount()));
 				frame_counter_ = 0;
 			}
+			CSIM::drawRuleInfoWindow(rule_, rule_config_);
 		}
 
-		ImGui::BeginFrameCustom();
 		if (cli_emulator_.draw(window_.getKeyState(GLFW_KEY_ENTER) == GLFW_PRESS,
 													 window_.getKeyState(GLFW_KEY_BACKSPACE) == GLFW_PRESS)) {
-			/// TODO
+			parseCommand();
 		}
+
+		/// NOLINTBEGIN
+		ImGui::Begin("Technical Info");
+		ImGui::Text("window width :: %i", width);
+		ImGui::Text("window height :: %i", height);
+		ImGui::Text("FPS :: %f", 1.f / renderer_.time_step_);
+		ImGui::End();
+
+		ImGui::Begin("States");
+		ImGui::Text("state count :: %lu", renderer_.colorCount());
+		if(ImGui::BeginTable("##state_colors", 1, ImGuiTableFlags_Borders, ImVec2{-1, -1})) {
+			const auto& colors = renderer_.colors();
+			for(std::size_t r=0; r<renderer_.colorCount(); ++r) {
+				ImGui::TableNextRow();
+				ImGui::TableSetColumnIndex(0);
+				ImGui::Text("          ");
+				const auto color = colors.at(r);
+				const auto tile_color = ImGui::GetColorU32({color.x, color.y, color.z, color.w});
+				ImGui::TableSetBgColor(ImGuiTableBgTarget_CellBg, tile_color);
+			}
+			ImGui::EndTable();
+		}
+		ImGui::End();
+
+		ImGui::Begin("Map info");
+		const auto map_res = cell_map_.resolution();
+		ImGui::Text("map width :: %i", map_res.x);
+		ImGui::Text("map height :: %i", map_res.y);
+		ImGui::Separator();
+		ImGui::Image((void*)(intptr_t)cell_map_.textureFbo().tex_id(),
+								 {static_cast<float>(map_res.x), static_cast<float>(map_res.y)},
+								 {0.f, 1.f}, {1.f, 0.f}, {1.f, 1.f, 1.f, 1.f}, {.2f, .2f, .411f, 1.f}); // NOLINT
+
+		ImGui::End();
+		/// NOLINTEND
+
 		ImGui::EndFrameCustom();
 
 		window_.swapBuffers();
