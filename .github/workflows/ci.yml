@@ -82,7 +82,7 @@ jobs:
       - name: configure project ubuntu
         if: matrix.os == 'ubuntu-22.04'
         run: |
-          cmake -S . -B ./build -G "${{ matrix.generator }}" -DGIT_SHA:STRING=${{github.sha}} -DCMAKE_BUILD_TYPE=Release -DREMOTE_BUILD=ON -DUBUNTU_PROFILE=ON
+          sudo cmake -S . -B ./build -G "${{ matrix.generator }}" -DGIT_SHA:STRING=${{github.sha}} -DCMAKE_BUILD_TYPE=Release -DREMOTE_BUILD=ON 
 
       - name: configure project macos,windows
         if: runner.os == 'Windows' || matrix.os == 'macos-11'

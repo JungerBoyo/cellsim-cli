@@ -3,7 +3,10 @@
 //
 #include "app.hpp"
 
+#ifdef GL_DEBUG
 #include <glad/glad.h>
+#endif
+
 #include <spdlog/spdlog.h>
 #include <imgui/imgui_utils.hpp>
 #include <imgui.h>
