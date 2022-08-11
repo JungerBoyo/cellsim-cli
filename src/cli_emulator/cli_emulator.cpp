@@ -90,7 +90,7 @@ bool CSIM::CLIEmulator::draw(bool parse, bool backspace) {
 				parser.exit(e, parser_output, parser_output);
 			}
 			/// if there ve been any output to stream
-			if(parser_output.rdbuf()->is_avail() > 0) {
+			if(parser_output.rdbuf()->in_avail() > 0) {
 				/// copy the contents of the parser output into a cli buffer
 				const auto parser_output_str = "\n" + parser_output.str();
 				const auto parser_output_str_len_diff = static_cast<std::int64_t>(parse_str.length());
