@@ -17,7 +17,7 @@ int main() {
 #ifdef GLFW_DEBUG
 		CSIM::Window window(width, height, title,
 										    [](int, const char *message) { spdlog::error("[glfw] {}", message); });
-#elif
+#else
 		CSIM::Window window(width, height, title, nullptr);
 #endif
 

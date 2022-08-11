@@ -36,6 +36,7 @@ jobs:
           - windows-2022
           - windows-2019
           - macos-11
+          - ubuntu-22.04
         compiler:
           - llvm-14.0.0
         generator:
@@ -43,7 +44,6 @@ jobs:
         include:
           - os: ubuntu-22.04
             generator: 'Unix Makefiles'
-            compiler: gcc-12
 
     steps:
       - uses: actions/checkout@v3
