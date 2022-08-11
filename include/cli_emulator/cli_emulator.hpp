@@ -19,7 +19,6 @@ namespace CSIM {
  */
 struct CLIEmulator {
 	static constexpr std::size_t INITIAL_CLI_BUF_SIZE { 4096 }; /*!< initial capacity of input text buffer */
-protected:
 	CLI::App parser; /*!< CLI11 app */
 
 private:
@@ -36,6 +35,7 @@ private:
 	std::int64_t blocking_cursor_pos_{ static_cast<std::int64_t>(prompt_.size()) - 1 };
 	std::int64_t cursor_pos_ { 0 }; /*!< current cursor position (set by imgui callback) */
 	bool cli_text_changed_{ false }; /*!< info to ImGui about text change */
+	bool clear_text_ { false }; /*!< flag is raised in clear() method */
 public:
 	/**
 	 * CLI emulator constructor
@@ -48,6 +48,7 @@ public:
 			: parser(description.data()), prompt_(std::string(prompt) + ">  "), label_(title)  {
 		cli_text_.reserve(INITIAL_CLI_BUF_SIZE);
 	}
+
 	/**
 	 * Method draws CLI and based on passed parameters parse the current command
 	 * @param parse tells if ENTER key was pressed.
@@ -56,6 +57,11 @@ public:
 	 * 				 else TRUE (app CLI11 new arguments can be processed by a user)
 	 */
 	bool draw(bool parse, bool backspace);
+
+	/**
+	 * Clears CLI console
+	 */
+	void clear();
 
 	/**
 	 * virtual method to override and set CLI options inside thorugh CLI11 app aka parse

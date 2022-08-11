@@ -11,6 +11,7 @@
 #include <memory>
 #include <string_view>
 #include <vector>
+#include <utility>
 
 namespace CSIM {
 
@@ -23,16 +24,15 @@ struct RuleConfig { // NOLINT no need for move constructor/assignment
 			: step_shader_(std::move(step_shader)) {
 	}
 
+	[[nodiscard]] virtual std::string_view ruleConfigName() const = 0;
+	[[nodiscard]]	virtual const std::vector<std::pair<std::string, std::string>>&
+	configSerialized() const = 0;
+
 	[[nodiscard]] virtual std::size_t size() const = 0;
 	[[nodiscard]] virtual const void *data() const = 0;
 
-	[[nodiscard]] std::shared_ptr<const Shader> getShader() const {
-		return step_shader_;
-	}
-
-	virtual void destroy() {
-		step_shader_->destroy();
-	}
+	[[nodiscard]] std::shared_ptr<const Shader> getShader() const { return step_shader_; }
+	virtual void destroy() { step_shader_->destroy(); }
 
 	virtual ~RuleConfig() = default;
 };
@@ -41,16 +41,16 @@ struct RuleConfig1DTotalistic : public RuleConfig {
 	static constexpr Vec2<std::uint32_t> RANGE_LIM{0, 10};
 	static constexpr std::size_t MAX_OPTIONS{2 * RANGE_LIM.y + 1};
 
+
 	struct Config {
 		std::int32_t range;
 		std::int32_t center_active;
-		alignas(16) std::int32_t
-				survival_conditions_hashmap[MAX_OPTIONS]; // NOLINT interfacing with gl
-		alignas(16) std::int32_t
-				birth_conditions_hashmap[MAX_OPTIONS]; // NOLINT interfacing with gl
+		alignas(16) std::int32_t survival_conditions_hashmap[MAX_OPTIONS]; // NOLINT interfacing with gl
+		alignas(16) std::int32_t birth_conditions_hashmap[MAX_OPTIONS]; // NOLINT interfacing with gl
 	};
 
 	Config config_;
+	std::vector<std::pair<std::string, std::string>> config_serialized_;
 
 	RuleConfig1DTotalistic( // NOLINT config is populated in the body
 			std::int32_t range, bool center_active,
@@ -58,51 +58,47 @@ struct RuleConfig1DTotalistic : public RuleConfig {
 			const std::vector<std::size_t>& birth_conditions,
 			std::shared_ptr<Shader> step_shader);
 
-	[[nodiscard]] std::size_t size() const override {
-		return sizeof(Config);
-	}
-	[[nodiscard]] const void *data() const override {
-		return &config_;
-	}
+	[[nodiscard]]	std::string_view ruleConfigName() const override { return "1D Totalistic"; }
+	[[nodiscard]]	const std::vector<std::pair<std::string, std::string>>&
+	configSerialized() const override { return config_serialized_; }
 
-	void destroy() override {
-		RuleConfig::destroy();
-	}
+	[[nodiscard]] std::size_t size() const override { return sizeof(Config); }
+	[[nodiscard]] const void *data() const override { return &config_; }
+
+	void destroy() override { RuleConfig::destroy(); }
 };
 
 struct RuleConfig1DBinary : public RuleConfig {
 	static constexpr Vec2<std::uint32_t> RANGE_LIM{0, 4};
-	static constexpr std::uint32_t MAX_PATTERN_COUNT{
-			16}; // (2^(2 * RANGE_LIM.y + 1))/32
+	static constexpr std::uint32_t MAX_PATTERN_COUNT{16}; // (2^(2 * RANGE_LIM.y + 1))/32
 
 	struct Config {
 		std::int32_t range;
-		alignas(16) std::uint32_t
-				pattern_match_code[MAX_PATTERN_COUNT]; // NOLINT interfacing with gl
+		alignas(16) std::uint32_t pattern_match_code[MAX_PATTERN_COUNT]; // NOLINT interfacing with gl
 	};
 
 	Config config_;
+	std::vector<std::pair<std::string, std::string>> config_serialized_;
 
 	RuleConfig1DBinary( // NOLINT init inside the body
-			std::int32_t range, std::string_view pattern_match_code,
-			std::shared_ptr<Shader> step_shader)
-			: RuleConfig(std::move(step_shader)) {
+			std::int32_t range, std::string_view pattern_match_code, std::shared_ptr<Shader> step_shader)
+			: RuleConfig(std::move(step_shader)),
+				config_serialized_({{"Range", std::to_string(range)},
+														{"Pattern match code", std::string(pattern_match_code)}}) {
 		config_.range = range;
 		parsePatternMatchCode(pattern_match_code);
 	}
 
+	[[nodiscard]]	std::string_view ruleConfigName() const override { return "1D Totalistic"; }
+	[[nodiscard]]	const std::vector<std::pair<std::string, std::string>>&
+	configSerialized() const override { return config_serialized_; }
+
 	void parsePatternMatchCode(std::string_view pattern_match_code);
 
-	[[nodiscard]] std::size_t size() const override {
-		return sizeof(Config);
-	}
-	[[nodiscard]] const void *data() const override {
-		return &config_;
-	}
+	[[nodiscard]] std::size_t size() const override { return sizeof(Config); }
+	[[nodiscard]] const void *data() const override { return &config_; }
 
-	void destroy() override {
-		RuleConfig::destroy();
-	}
+	void destroy() override { RuleConfig::destroy(); }
 };
 
 } // namespace CSIM

@@ -29,17 +29,18 @@ struct Rule { // NOLINT no need for move constructor/assignment
 	std::shared_ptr<RuleConfig> rule_config_;
 
 	explicit Rule(std::shared_ptr<RuleConfig> rule_config);
+	void setRuleConfig(std::shared_ptr<RuleConfig> rule_config);
 
 	[[nodiscard]] virtual RuleType ruleType() const = 0;
+	[[nodiscard]] virtual std::string_view ruleTypeSerialized() const = 0;
 
 	void setBaseConfig(BaseConfig config, bool update_iteration = false) noexcept;
-	[[nodiscard]] auto iteration() {
-		return base_config_.iteration++;
-	}
+	[[nodiscard]] auto iteration() const { return base_config_.iteration; }
+	[[nodiscard]] auto iterate() { return base_config_.iteration++; }
 
 	virtual void destroy();
 
-	virtual void step(const CellMap &cell_map) = 0;
+	virtual void step(const CellMap &cell_map, std::int32_t state_count) = 0;
 	virtual ~Rule() = default;
 };
 /*
@@ -51,8 +52,9 @@ struct Rule1D : public Rule {
 	explicit Rule1D(std::shared_ptr<RuleConfig> rule_config);
 
 	[[nodiscard]] RuleType ruleType() const override { return RuleType::BASIC_1D; }
+	[[nodiscard]] std::string_view ruleTypeSerialized() const override { return "Basic 1D"; }
 
-	void step(const CellMap &cell_map) noexcept override;
+	void step(const CellMap &cell_map, std::int32_t state_count) noexcept override;
 
 	void destroy() override;
 };

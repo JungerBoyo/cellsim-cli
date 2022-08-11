@@ -47,8 +47,10 @@ void ImGui::Uninit() {
 struct InputTextUserData {
 	std::string& str;
 	std::int64_t insert_pos;
-	std::int64_t& cursor_pos;
 	bool insert_text;
+	std::int32_t clear_pos;
+	bool clear_text;
+	std::int64_t& cursor_pos;
 };
 
 static int InputTextCallback(ImGuiInputTextCallbackData* data) {
@@ -67,25 +69,29 @@ static int InputTextCallback(ImGuiInputTextCallbackData* data) {
 		data->Buf = str.data();
 	}
 
-	if (data->EventFlag == ImGuiInputTextFlags_CallbackAlways && user_data->insert_text) {
-		auto& str_insert_begin = *std::next(str.begin(), insert_pos);
-		data->InsertChars(static_cast<int>(insert_pos), &str_insert_begin);
+	if (data->EventFlag == ImGuiInputTextFlags_CallbackAlways) {
+		if (user_data->insert_text) {
+			auto &str_insert_begin = *std::next(str.begin(), insert_pos);
+			data->InsertChars(static_cast<int>(insert_pos), &str_insert_begin);
 
-		constexpr char token = '>';
-		bool first_token{ false };
-		int i = data->BufTextLen;
-		for(;i > 0; --i) {
-			if(data->Buf[i] == token)	{ // NOLINT interfacing with imgui
-				if(!first_token) {
-					first_token = true;
-				} else {
-					break;
+			constexpr char token = '>';
+			bool first_token{false};
+			int i = data->BufTextLen;
+			for (; i > 0; --i) {
+				if (data->Buf[i] == token) { // NOLINT interfacing with imgui
+					if (!first_token) {
+						first_token = true;
+					} else {
+						break;
+					}
 				}
 			}
-		}
 
-		constexpr int offset{ 2 };
-		data->DeleteChars(i + offset, data->BufTextLen - i - offset);
+			constexpr int offset{2};
+			data->DeleteChars(i + offset, data->BufTextLen - i - offset);
+		} else if(user_data->clear_text && user_data->clear_pos <= data->BufTextLen) {
+			data->DeleteChars(user_data->clear_pos, data->BufTextLen - user_data->clear_pos);
+		}
 	}
 
 	user_data->cursor_pos = data->CursorPos;
@@ -93,9 +99,9 @@ static int InputTextCallback(ImGuiInputTextCallbackData* data) {
 }
 
 bool ImGui::InputTextMultiline(std::string_view label, std::string& str, bool insert_text,
-															 std::int64_t insert_pos, std::int64_t& cursor_pos, bool readonly) {
-
-	InputTextUserData user_data { str, insert_pos, cursor_pos, insert_text };
+															 std::int64_t insert_pos, bool clear_text, std::int32_t clear_pos,
+															 std::int64_t& cursor_pos, bool readonly) {
+	InputTextUserData user_data { str, insert_pos, insert_text, clear_pos, clear_text, cursor_pos };
 	auto flags = ImGuiInputTextFlags_CallbackResize|       // NOLINT imgui
 							 ImGuiInputTextFlags_CallbackAlways|			 // NOLINT imgui
 							 ImGuiInputTextFlags_CallbackCharFilter;   // NOLINT imgui

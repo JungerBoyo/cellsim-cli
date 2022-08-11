@@ -1,6 +1,6 @@
 find_package(glad REQUIRED)
 
-add_library(cellmap_IMPL STATIC cellmap.cpp)
+add_library(cellmap_IMPL STATIC cellmap.cpp texture_backed_framebuffer.cpp)
 target_link_libraries(cellmap_IMPL
   PUBLIC
     cellmap_INC

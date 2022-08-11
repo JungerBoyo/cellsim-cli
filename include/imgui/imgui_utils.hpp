@@ -16,7 +16,8 @@ void Uninit();
 // NOLINTBEGIN
 
 bool InputTextMultiline(std::string_view label, std::string& str, bool insert_text,
-												std::int64_t insert_pos, std::int64_t& cursor_pos, bool readonly);
+												std::int64_t insert_pos, bool clear_text, std::int32_t clear_pos,
+												std::int64_t& cursor_pos, bool readonly);
 // NOLINTEND
 }
 

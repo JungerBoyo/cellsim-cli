@@ -67,6 +67,7 @@ bool CSIM::CLIEmulator::draw(bool parse, bool backspace) {
 
 		/// if there is anything to parse
 		if(end_index > blocking_cursor_pos_) {
+			result = true;
 			/// construct parse string taken from the cli buffer
 			const std::string_view parse_str {
 					std::next(cli_text_.cbegin(), next_insert_pos_),
@@ -82,14 +83,17 @@ bool CSIM::CLIEmulator::draw(bool parse, bool backspace) {
 			std::stringstream parser_output;
 			try { parser.parse(static_cast<int>(args.size()), args.data()); }
 			catch (const CLI::ParseError& e) {
+				const auto e_name = e.get_name();
+				result = e.get_exit_code() == static_cast<int>(CLI::ExitCodes::Success) &&
+						     e_name != "CallForHelp" && e_name != "CallForAllHelp" &&
+								 e_name != "CallForVersion";
 				parser.exit(e, parser_output, parser_output);
 			}
 			/// if there ve been any output to stream
 			if(!parser_output.view().empty()) {
 				/// copy the contents of the parser output into a cli buffer
 				const auto parser_output_str = "\n" + parser_output.str();
-				const auto parser_output_str_len_diff =
-						static_cast<std::int64_t>(parse_str.length());
+				const auto parser_output_str_len_diff = static_cast<std::int64_t>(parse_str.length());
 				std::copy(parser_output_str.cbegin(), parser_output_str.cend(),
 									std::next(cli_text_.begin(), next_insert_pos_ + parser_output_str_len_diff));
 				/// add new prompt
@@ -103,23 +107,24 @@ bool CSIM::CLIEmulator::draw(bool parse, bool backspace) {
 																											parser_output_str.length());
 				/// move readonly area further
 				blocking_cursor_pos_ = next_insert_pos_ + static_cast<std::int64_t>(prompt_.length()) - 1;
-				result = true;
-			}
-		} else { /// if there wasn't any output just construct new prompt
-			const auto prompt_str = std::string(prompt_);
-			const auto next_prompt = prompt_str + "\n" + prompt_str;
-			std::copy(next_prompt.cbegin(), next_prompt.cend(),
-								std::next(cli_text_.begin(), next_insert_pos_));
+			} else { /// if there wasn't any output just construct new prompt
+				const auto prompt_str = std::string(prompt_);
+				const auto next_prompt = "\n" + prompt_str;
+				std::copy(next_prompt.cbegin(), next_prompt.cend(),
+									std::next(cli_text_.begin(), next_insert_pos_ +
+																							 static_cast<std::int64_t>(parse_str.length())));
 
-			next_insert_pos_ += static_cast<std::int64_t>(prompt_.length()) + 1;
-			blocking_cursor_pos_ = next_insert_pos_ + static_cast<std::int64_t>(prompt_.length()) - 1;
+				next_insert_pos_ += static_cast<std::int64_t>(parse_str.length());
+				blocking_cursor_pos_ = next_insert_pos_ + static_cast<std::int64_t>(prompt_.length());
+			}
 		}
 
 		cli_text_changed_ = true;
 	}
 
 	ImGui::Begin(label_.c_str(), nullptr, 0);
-	ImGui::InputTextMultiline("##source", cli_text_, cli_text_changed_, current_insert_pos_, cursor_pos_,
+	ImGui::InputTextMultiline("##source", cli_text_, cli_text_changed_, current_insert_pos_,
+														clear_text_, static_cast<std::int32_t>(prompt_.length())-1, cursor_pos_,
 														/// if ~ENTER and BACKSPACE and cursor is <= blocking position
 														/// then switch to readonly mode
 														!parse && backspace && cursor_pos_ <= blocking_cursor_pos_);
@@ -129,6 +134,15 @@ bool CSIM::CLIEmulator::draw(bool parse, bool backspace) {
 		current_insert_pos_ = next_insert_pos_;
 		cli_text_changed_ = false;
 	}
+	clear_text_ = false;
 
 	return result;
+}
+void CSIM::CLIEmulator::clear() {
+	current_insert_pos_ = next_insert_pos_ = 0;
+	blocking_cursor_pos_ = static_cast<std::int64_t>(prompt_.length()) - 1;
+	std::fill(cli_text_.begin(), cli_text_.end(), '\0');
+	cli_text_.resize(prompt_.length());
+	std::copy(prompt_.cbegin(), prompt_.cend(), cli_text_.begin());
+	clear_text_ = true;
 }

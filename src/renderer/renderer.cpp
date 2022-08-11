@@ -8,26 +8,29 @@
 #include <algorithm>
 #include <glad/glad.h>
 
-CSIM::Renderer::Renderer(std::shared_ptr<const Shader> render_shader)
-		: render_shader_(std::move(render_shader)) {
+CSIM::Renderer::Renderer(std::shared_ptr<Shader> render_shader, std::shared_ptr<Shader> grid_shader)
+		: render_shader_(std::move(render_shader)), grid_shader_(std::move(grid_shader)) {
 
-	std::array<GLuint, 3> buffers; // NOLINT initialization through ptr
+	std::array<GLuint, 4> buffers; // NOLINT initialization through ptr
 	glCreateBuffers(buffers.size(), buffers.data());
 	vbo_id_ = buffers[0];
-	view_config_ubo_id_ = buffers[1];
-	colors_ubo_id_ = buffers[2];
+	outline_ibo_od_ = buffers[1];
+	view_config_ubo_id_ = buffers[2];
+	colors_ubo_id_ = buffers[3];
 
 	// set up vertex data
 	glNamedBufferStorage(vbo_id_, QUAD.size() * sizeof(float), QUAD.data(),
 											 0); // NOLINT no flags = readonly data
+	// set up outline index data
+	glNamedBufferStorage(outline_ibo_od_, OUTLINE_INDICES.size() * sizeof(std::uint32_t),
+											 OUTLINE_INDICES.data(), 0); // NOLINT no flags = readonly data
 
 	// specify attrib layout
 	glCreateVertexArrays(1, &vao_id_); // NOLINT single vao
 	glBindVertexArray(vao_id_);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_);
 
-	glVertexAttribPointer(shconfig::IN_POSITION_LOCATION, 2, GL_FLOAT, GL_FALSE,
-												0,
+	glVertexAttribPointer(shconfig::IN_POSITION_LOCATION, 2, GL_FLOAT, GL_FALSE, 0,
 												nullptr); // NOLINT stride=0, type=fvec2
 	glEnableVertexAttribArray(shconfig::IN_POSITION_LOCATION);
 
@@ -35,34 +38,22 @@ CSIM::Renderer::Renderer(std::shared_ptr<const Shader> render_shader)
 	glBindVertexArray(0);
 
 	// set up ubos for ViewConfig and Colors
-	render_shader_->bind();
-
 	glNamedBufferStorage(view_config_ubo_id_, sizeof(ViewConfig), &view_config_,
 											 GL_DYNAMIC_STORAGE_BIT);
-	glBindBufferBase(GL_UNIFORM_BUFFER,
-									 shconfig::VIEW_CONFIG_UBO_BINDING_LOCATION,
+	glBindBufferBase(GL_UNIFORM_BUFFER, shconfig::VIEW_CONFIG_UBO_BINDING_LOCATION,
 									 view_config_ubo_id_);
-
-	glNamedBufferStorage(
-			colors_ubo_id_,
-			static_cast<GLsizei>(colors_.size() * sizeof(Vec4<float>)),
-			colors_.data(), GL_DYNAMIC_STORAGE_BIT);
-	glBindBufferBase(GL_UNIFORM_BUFFER, shconfig::COLORS_UBO_BINDING_LOCATION,
-									 colors_ubo_id_);
-
-	render_shader_->unbind();
+	glNamedBufferStorage(colors_ubo_id_, static_cast<GLsizei>(colors_.size() * sizeof(Vec4<float>)),
+											 colors_.data(), GL_DYNAMIC_STORAGE_BIT);
+	glBindBufferBase(GL_UNIFORM_BUFFER, shconfig::COLORS_UBO_BINDING_LOCATION, colors_ubo_id_);
 }
 
 void CSIM::Renderer::setColors(const std::vector<Vec4<float>>& colors) {
-	const std::size_t colors_size =
-			std::clamp(colors.size(), static_cast<std::size_t>(0),
-								 shconfig::MAX_COLORS - 1);
-	std::copy_n(colors.begin(), colors_size, colors_.begin());
+	color_count_ = std::clamp(colors.size(), static_cast<std::size_t>(0), shconfig::MAX_COLORS - 1);
+	std::copy_n(colors.begin(), color_count_, colors_.begin());
 
-	glNamedBufferSubData(
-			colors_ubo_id_, 0,
-			static_cast<GLsizeiptr>(sizeof(Vec4<float>) * colors_size),
-			colors_.data());
+	glNamedBufferSubData(colors_ubo_id_, 0,
+											 static_cast<GLsizeiptr>(sizeof(Vec4<float>) * color_count_),
+											 colors_.data());
 }
 
 void CSIM::Renderer::updateView(Vec2<float> offset_vec,
@@ -73,8 +64,9 @@ void CSIM::Renderer::updateView(Vec2<float> offset_vec,
 	view_config_.scale *= scale_vec;
 }
 
-void CSIM::Renderer::draw(Vec2<int> win_size,
-													const CellMap &cell_map) noexcept {
+void CSIM::Renderer::draw(Vec2<int> win_size, const CellMap &cellmap) noexcept {
+	glClearColor(0.f, 0.f, 0.f, 1.f);
+	glClear(GL_COLOR_BUFFER_BIT);
 	render_shader_->bind();
 	glBindVertexArray(vao_id_);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_);
@@ -84,24 +76,56 @@ void CSIM::Renderer::draw(Vec2<int> win_size,
 
 	glNamedBufferSubData(view_config_ubo_id_, 0, sizeof(ViewConfig),
 											 &view_config_);
+	glViewport(0, 0, win_size.x, win_size.y);
 
 	// inserting memory barrier for a shader storages because of the state_map
 	// which is modified in during the step
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-	glViewport(0, 0, win_size.x, win_size.y);
-	glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, QUAD.size() / 2,
-												static_cast<GLsizei>(cell_map.cell_offsets_.size()));
+	const auto instance_count = static_cast<GLsizei>(cellmap.cell_offsets_.size());
+	glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, QUAD.size() / 2, instance_count);
+	render_shader_->unbind();
+
+	if (grid_on_) {
+		grid_shader_->bind();
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, outline_ibo_od_);
+		glDrawElementsInstanced(GL_LINE_LOOP, 4, GL_UNSIGNED_INT, nullptr, instance_count);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		grid_shader_->unbind();
+	}
+
+	auto cellmap_fbo = cellmap.textureFbo();
+	cellmap_fbo.bind_framebuffer();
+	glClearColor(0.f, 0.f, 0.f, 1.f);
+	glClear(GL_COLOR_BUFFER_BIT);
+	render_shader_->bind();
+	const auto scale = 2.f / static_cast<float>(cellmap_fbo.height());
+	ViewConfig cellmap_view_config {
+			.offset = { -1.f - scale*(-.5f), 1.f - scale * .5f}, // NOLINT (-1.f, 1.f) = left upper corner
+	  																											 // (-.5f, .5f) = left upper corner
+																													 // of cell map
+			.scale = scale,
+			.aspect_ratio = static_cast<float>(cellmap_fbo.width()) /
+										  static_cast<float>(cellmap_fbo.height())
+	};
+	glNamedBufferSubData(view_config_ubo_id_, 0, sizeof(ViewConfig), &cellmap_view_config);
+	glViewport(0, 0, cellmap_fbo.width(), cellmap_fbo.height());
+
+	glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, QUAD.size() / 2, instance_count);
+	render_shader_->unbind();
+	cellmap_fbo.unbind_framebuffer();
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-	render_shader_->unbind();
 }
 
 void CSIM::Renderer::destroy() {
 	std::vector<GLuint> buffers;
-	buffers.reserve(3); // NOLINT
+	buffers.reserve(4); // NOLINT
 
 	buffers.push_back(vbo_id_);
+	buffers.push_back(outline_ibo_od_);
 	buffers.push_back(view_config_ubo_id_);
 	buffers.push_back(colors_ubo_id_);
+
+	glDeleteBuffers(static_cast<GLsizei>(buffers.size()), buffers.data());
 }

@@ -18,14 +18,16 @@ namespace CSIM {
 struct App {
 	Window& window_;
 
-	std::shared_ptr<Shader> render_shader_{std::make_shared<VFShader>(shconfig::VSH_RENDER_SHADER_PATH,
-																				 													  shconfig::FSH_RENDER_SHADER_PATH)};
+	std::shared_ptr<Shader> render_shader_{};
 
-	Renderer renderer_{ render_shader_ };
-	CellMap cell_map_{ render_shader_, 64, 64, 1 }; // NOLINT
+	Renderer renderer_{
+			std::make_shared<VFShader>(shconfig::VSH_RENDER_SHADER_PATH, shconfig::FSH_RENDER_SHADER_PATH),
+			std::make_shared<VFShader>(shconfig::VSH_GRID_SHADER_PATH, shconfig::FSH_GRID_SHADER_PATH)
+	};
+	CellMap cell_map_{ 64, 64 }; // NOLINT
 	AppCLIEmulator cli_emulator_{"cellsim cli",
 															 "cellular automata cli based simulation app", "cellsim"};
-	std::unique_ptr<Rule> rule_{ nullptr };
+	std::shared_ptr<Rule> rule_{ nullptr };
 	std::shared_ptr<RuleConfig> rule_config_{ nullptr };
 
 
@@ -35,6 +37,8 @@ struct App {
 
 	explicit App(Window& window);
 
+	void updateRuleConfig(std::shared_ptr<RuleConfig> config, RuleType rule_type);
+	void parseCommand();
 	void run();
 
 	void destroy();

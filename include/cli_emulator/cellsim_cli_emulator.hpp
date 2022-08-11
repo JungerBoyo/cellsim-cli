@@ -16,14 +16,28 @@ struct AppCLIEmulator : public CLIEmulator {
 	struct {
 		/// command
 		CLI::App* cmd_set;
+			/// subcommand
+			CLI::App* subcmd_grid;
+				/// options
+				struct {
+					CLI::Option* hex_color_option;
+					std::uint32_t hex_color;
+					CLI::Option* toggle_option;
+					bool toggle;
+				} options_grid;
 			///	subcommand
 			CLI::App* subcmd_cellmap;
 				/// options
 				struct {
-					std::size_t width;
-					std::size_t height;
-					std::vector<std::uint32_t> colors;
+					/// initial values needed for range validators in seed command
+					std::size_t width{ 64 }; // NOLINT initial cellmap extent in x
+					std::size_t height{ 64 }; // NOLINT initial cellmap extent in y
+					bool preserve_contents;
 				} options_cellmap;
+			/// subcommand
+			CLI::App* subcmd_colors;
+				/// options
+				std::vector<std::uint32_t> option_colors;
 			/// subcommand
 			CLI::App* subcmd_rule;
 				/// subsubcommand
@@ -45,9 +59,18 @@ struct AppCLIEmulator : public CLIEmulator {
 			/// subcommand
 			CLI::App* subcmd_counter;
 			/// options
-				std::size_t arg_counter{0};
+				std::uint32_t option_counter{0};
 		/// command
 		CLI::App* cmd_clear;
+		/// command
+		CLI::App* cmd_seed;
+		struct {
+			std::size_t x;
+			std::size_t y;
+			std::size_t range;
+			bool round;
+			bool clip;
+		} options_seed;
 	} config;
 
 	/**

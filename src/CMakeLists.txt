@@ -20,12 +20,14 @@ target_link_libraries(app_IMPL
   PUBLIC
     app_INC
   PRIVATE
+    rule_info_window_IMPL
     imgui_utils_IMPL
 )
 
 if(GL_DEBUG)
   target_link_system_libraries(app_IMPL
     PRIVATE
+      imgui::imgui
       glfw::glfw
       glad::glad
       spdlog::spdlog
@@ -33,6 +35,7 @@ if(GL_DEBUG)
 else()
   target_link_system_libraries(app_IMPL
     PRIVATE
+      imgui::imgui
       glfw::glfw
   )
 endif()

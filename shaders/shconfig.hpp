@@ -21,6 +21,9 @@ namespace CSIM::shconfig {
 
 	static constexpr std::string_view VSH_RENDER_SHADER_PATH = "shaders/bin/render_shader/vert.spv";
 	static constexpr std::string_view FSH_RENDER_SHADER_PATH = "shaders/bin/render_shader/frag.spv";
+
+	static constexpr std::string_view VSH_GRID_SHADER_PATH = "shaders/bin/grid_shader/vert.spv";
+	static constexpr std::string_view FSH_GRID_SHADER_PATH = "shaders/bin/grid_shader/frag.spv";
 }
 
 #endif

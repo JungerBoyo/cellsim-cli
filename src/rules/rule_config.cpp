@@ -3,6 +3,7 @@
 //
 #include "rules/rule_config.hpp"
 #include <algorithm>
+#include <numeric>
 #include <span>
 #include <array>
 
@@ -12,8 +13,22 @@ CSIM::RuleConfig1DTotalistic::RuleConfig1DTotalistic( // NOLINT config is
 		const std::vector<std::size_t>& survival_conditions,
 		const std::vector<std::size_t>& birth_conditions,
 		std::shared_ptr<Shader> step_shader)
-		: RuleConfig(std::move(step_shader)) {
-
+		: RuleConfig(std::move(step_shader)),
+			config_serialized_({{"Range", std::to_string(range)},
+													{"Center active", center_active ? "true" : "false"},
+												  {"Survival conditions", std::accumulate(survival_conditions.cbegin(),
+																					 survival_conditions.cend(),
+																					 std::string{},
+																					 [](std::string str, std::size_t value) {
+																						return std::move(str) + std::to_string(value) + ',';
+																					 }
+																					)},
+													{"Birth conditions", std::accumulate(birth_conditions.cbegin(),
+																					 birth_conditions.cend(),
+																					 std::string{},
+																					 [](std::string str, std::size_t value) {
+																						return std::move(str) + std::to_string(value) + ',';
+																					 })}}) {
 	config_.range = range;
 	config_.center_active = static_cast<std::int32_t>(center_active);
 
