@@ -8,18 +8,10 @@
 #include <imgui.h>
 #include <imgui/imgui_utils.hpp>
 
-/**
- * Split string with regard to token. There can be arbitrary number of tokens between strings
- * @example
- * 	word1:token:word2 = word1:token::token: ... :token:word2 = {word1, word2}
- * @param str string to split
- * @param token
- * @return vector of strings
- */
-static auto splitString(std::string_view str, char token) {
+std::vector<std::string> CSIM::CLIEmulator::splitString(std::string_view str, char token) {
 	std::vector<std::string> result; // result vector of strings
 	// ptr to next string to add to result
-	const char* str_to_add_ptr = str.front() != ' ' ? str.data() : nullptr;
+	const char* str_to_add_ptr = str.front() != token ? str.data() : nullptr;
 	std::size_t str_to_add_i = 0; // beginning position of next string to add result
 	bool tokens = false; // true if tokens strike is on turns to false after adding next string
 	for(std::size_t i=0; i<str.length(); ++i)	{

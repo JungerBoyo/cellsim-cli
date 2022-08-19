@@ -15,18 +15,18 @@ CSIM::AppCLIEmulator::AppCLIEmulator(std::string_view title, std::string_view de
 namespace CLI {
 /**
  * checks if size of the vector is in range [min_size, max_size]
- */
+
 struct VecSizeValidator : public CLI::Validator {
-	VecSizeValidator(std::size_t min_size, std::size_t max_size) {
+	explicit VecSizeValidator(int max_size) {
 		name_ = "vec size validator";
-		func_ = [min_size, max_size](const std::string &vec) {
-			auto size =
-					static_cast<std::size_t>(std::count(vec.begin(), vec.end(), ' '));
-			if (vec.back() == ' ' || (size == 0 && !vec.empty())) {
-				++size;
+		func_ = [this, max_size]([[maybe_unused]] const std::string& value) {
+			if(this->get_application_index() > max_size) {
+
 			}
-			if (size < min_size || size > max_size) {
-				return fmt::format("vector size {} isn't contained in {}, {}", size,
+
+			const auto splitted = split_func(vec, token);
+			if(splitted.size() < min_size || splitted.size() > max_size) {
+				return fmt::format("vector size {} isn't contained in {}, {}", splitted.size(),
 													 min_size, max_size);
 			} else {
 				return std::string();
@@ -34,6 +34,7 @@ struct VecSizeValidator : public CLI::Validator {
 		};
 	}
 };
+*/
 /**
  * checks if passed argument have only 0/1 and is contained in range [min_size, max_size]
  */
@@ -67,6 +68,12 @@ static auto DynamicRangeValidatorUtil(std::size_t value, std::size_t min, std::s
 
 void CSIM::AppCLIEmulator::setCLI() {
 	config.cmd_set = this->parser.add_subcommand("set", "command which sets values");
+		config.subcmd_clear_color = config.cmd_set->add_subcommand("clearcolor", "change color of the "
+																																					   "background");
+			config.subcmd_clear_color->add_option("-c,--color", config.option_clear_color,
+																					  "new background color in hex")
+																						->check(CLI::TypeValidator<std::uint32_t>())
+																						->required();
 		config.subcmd_grid = config.cmd_set->add_subcommand("grid", "turn on/off grid and modify grid "
 																																"color");
 			config.options_grid.toggle_option = config.subcmd_grid->add_flag("-t,--toggle",
@@ -96,8 +103,7 @@ void CSIM::AppCLIEmulator::setCLI() {
 																  ->add_subcommand("colors",
 																							     "modify number of states through new color set");
 			config.subcmd_colors->add_option("-c,--colors", config.option_colors,
-																				"add history colors to cells in array of hex values (max 255)")
-																				->check(CLI::VecSizeValidator(1, 255)) // NOLINT
+																				"add history colors to cells in array of hex values (max 256)")
 																				->required();
 		config.subcmd_rule = config.cmd_set
 															  ->add_subcommand("rule",
@@ -137,17 +143,38 @@ void CSIM::AppCLIEmulator::setCLI() {
 						   ->add_option("-s,--survive-conditions",
 												 	  config.options_1d_totalistic.survival_conditions,
 														"array of sums which qualify cell for survival")
-													  ->check(CLI::VecSizeValidator(RuleConfig1DTotalistic::RANGE_LIM.x + 1,
-																													2*RuleConfig1DTotalistic::RANGE_LIM.y+1))
 														->required();
 				config.subsubcmd_rule_1dtotalistic
 						   ->add_option("-b,--birth-conditions",
 												    config.options_1d_totalistic.birth_conditions,
 														"array of sums which qualify cell for birth")
-														->check(CLI::VecSizeValidator(RuleConfig1DTotalistic::RANGE_LIM.x + 1,
-																												  2*RuleConfig1DTotalistic::RANGE_LIM.y+1))
 														->required();
-		config.subcmd_counter = config.cmd_set->add_subcommand("counter", "set value of FPS step counter");
+			config.subsubcmd_rule_2dcyclic = config.subcmd_rule->add_subcommand("2dcyclic", "2d cyclic is"
+																																					"2 dimensional ca rule");
+				config.subsubcmd_rule_2dcyclic
+					->add_option("-r,--range", config.options_2d_cyclic.range,
+									 "describes range of the neighbourhood (0 ..<= 10)")
+					->check(CLI::Range(RuleConfig2DCyclic::RANGE_LIM.x,
+												     RuleConfig2DCyclic::RANGE_LIM.y))
+					->required();
+				config.subsubcmd_rule_2dcyclic
+					->add_option("-t,--threshold", config.options_2d_cyclic.threshold,
+											"threshold which divide sums on cells qualifying to"
+										  " be born/survive and to die")
+					->check(CLI::Range(RuleConfig2DCyclic::SUM_LIM.x, RuleConfig2DCyclic::SUM_LIM.y))
+					->required();
+				config.subsubcmd_rule_2dcyclic
+					->add_flag("-m,--moore", config.options_2d_cyclic.moore,
+										 "if set then kernel will be moore type otherwise neumann type")
+					->default_val(false);
+				config.subsubcmd_rule_2dcyclic
+					->add_flag("-s,--state-insensitive", config.options_2d_cyclic.state_insensitive,
+										 "if set then all cells with state higher than 0 will be accumulated otherwise"
+										 "otherwise only cells with next state after processed cell's state "
+										 "will be accumulated")
+					->default_val(false);
+
+	config.subcmd_counter = config.cmd_set->add_subcommand("counter", "set value of FPS step counter");
 			config.subcmd_counter->add_option("-c,--counter", config.option_counter,
 																			  "value to which to count")
 																				->check(CLI::TypeValidator<std::uint32_t>())

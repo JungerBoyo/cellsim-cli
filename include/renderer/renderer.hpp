@@ -40,11 +40,14 @@ struct Renderer {
 	std::array<Vec4<float>, shconfig::MAX_COLORS> colors_;
 	std::size_t color_count_{ 0 };
 	bool grid_on_{ false };
+	Vec4<float> clear_color_{0.f, 0.f, 0.f, 1.f};
 
 	static constexpr std::array<float, 8> QUAD{{-.5f, -.5f, -.5f, .5f, .5f, -.5f, .5f, .5f}};
 	static constexpr std::array<std::uint32_t, 4> OUTLINE_INDICES{{0, 1, 3, 2}};
 
 	explicit Renderer(std::shared_ptr<Shader> render_shader, std::shared_ptr<Shader> grid_shader);
+
+	void setClearColor(Vec4<float> color) { clear_color_ = color; }
 
 	void toggleGrid() noexcept { grid_on_ = !grid_on_; }
 	void setGridColor(Vec4<float> color) noexcept { view_config_.outline_color = color; }
@@ -55,7 +58,7 @@ struct Renderer {
 
 	void updateView(Vec2<float> offset_vec, float scale_vec) noexcept;
 
-	void draw(Vec2<int> win_size, const CellMap &cellmap) noexcept;
+	void draw(Vec2<int> win_size, const CellMap& cellmap) noexcept;
 
 	void destroy();
 };

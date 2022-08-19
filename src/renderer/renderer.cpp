@@ -48,7 +48,7 @@ CSIM::Renderer::Renderer(std::shared_ptr<Shader> render_shader, std::shared_ptr<
 }
 
 void CSIM::Renderer::setColors(const std::vector<Vec4<float>>& colors) {
-	color_count_ = std::clamp(colors.size(), static_cast<std::size_t>(0), shconfig::MAX_COLORS - 1);
+	color_count_ = std::clamp(colors.size(), static_cast<std::size_t>(0), shconfig::MAX_COLORS);
 	std::copy_n(colors.begin(), color_count_, colors_.begin());
 
 	glNamedBufferSubData(colors_ubo_id_, 0,
@@ -65,7 +65,7 @@ void CSIM::Renderer::updateView(Vec2<float> offset_vec,
 }
 
 void CSIM::Renderer::draw(Vec2<int> win_size, const CellMap &cellmap) noexcept {
-	glClearColor(0.f, 0.f, 0.f, 1.f);
+	glClearColor(clear_color_.x, clear_color_.y, clear_color_.z, clear_color_.w);
 	glClear(GL_COLOR_BUFFER_BIT);
 	render_shader_->bind();
 	glBindVertexArray(vao_id_);
@@ -95,7 +95,7 @@ void CSIM::Renderer::draw(Vec2<int> win_size, const CellMap &cellmap) noexcept {
 
 	auto cellmap_fbo = cellmap.textureFbo();
 	cellmap_fbo.bind_framebuffer();
-	glClearColor(0.f, 0.f, 0.f, 1.f);
+	glClearColor(clear_color_.x, clear_color_.y, clear_color_.z, clear_color_.w);
 	glClear(GL_COLOR_BUFFER_BIT);
 	render_shader_->bind();
 	const auto scale = 2.f / static_cast<float>(cellmap_fbo.height());

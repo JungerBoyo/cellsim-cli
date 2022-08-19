@@ -41,6 +41,7 @@ struct CellMap {
 	void extend(std::size_t new_width, std::size_t new_height, bool preserve_contents);
 
 	[[nodiscard]] const auto& textureFbo() const { return fbo_; }
+	[[nodiscard]] auto stateMapSsboId() const { return state_map_ssbo_id_; }
 
 	void generateOffsets() noexcept;
 

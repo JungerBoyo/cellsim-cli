@@ -3,9 +3,11 @@
 //
 #include "rules/rule_config.hpp"
 #include <algorithm>
+#include <cstddef>
 #include <numeric>
 #include <span>
 #include <array>
+#include <cstring>
 
 CSIM::RuleConfig1DTotalistic::RuleConfig1DTotalistic( // NOLINT config is
 																											// populated in the body
@@ -67,4 +69,51 @@ void CSIM::RuleConfig1DBinary::parsePatternMatchCode(
 		}
 		++i;
 	}
+}
+
+CSIM::RuleConfig2DCyclic::RuleConfig2DCyclic(std::int32_t range, std::int32_t threshold, bool moore,
+																						 bool state_insensitive,
+																						 std::shared_ptr<Shader> step_shader)
+	: RuleConfig(std::move(step_shader)),
+		config_serialized_({{"Range", std::to_string(range)},
+												{"Threshold", std::to_string(threshold)},
+												{"Kernel type", moore ? "Moore" : "Neumann"},
+												{"State insensitive", state_insensitive ? "Yes" : "No"}}) {
+
+	config_.threshold = threshold;
+	config_.state_insensitive = static_cast<std::int32_t>(moore);
+	std::array<utils::Vec2<std::int32_t>,
+	     			 static_cast<std::size_t>((2*RANGE_LIM.y + 1) * (2*RANGE_LIM.y + 1))> offsets;
+	if (moore) {
+		/// generating moore kernel offsets (square)
+		const auto size = 2 * range + 1;
+		config_.offset_count = size * size;
+		std::int32_t i=0;
+		for (std::int32_t y=-range; y<=range; ++y) {
+			for (std::int32_t x=-range; x<=range; ++x) {
+				offsets[i++] = {x, y}; // NOLINT interfacing with gl
+			}
+		}
+	} else {
+		/// generating neumann kernel offsets (diamond)
+		const auto size = 2 * range + 1;
+		config_.offset_count = (range - 1) * (1 + (1 + (range-2) * 2)) + size;
+		std::int32_t i=0;
+		for (std::int32_t y=0; y<range-1; ++y) {
+			const auto true_y = y - (range - 1);
+			for (std::int32_t x=0; x<=y; ++x) {
+				const auto true_x = x + 1;
+				offsets[i++] = { true_x, true_y}; // NOLINT interfacing with gl
+				offsets[i++] = {-true_x, true_y}; // NOLINT interfacing with gl
+				offsets[i++] = { true_x -true_y}; // NOLINT interfacing with gl
+				offsets[i++] = {-true_x,-true_y}; // NOLINT interfacing with gl
+			}
+		}
+		for (std::int32_t xy=-range; xy<=range; ++xy) {
+			offsets[i++] = {0, xy}; // NOLINT interfacing with gl
+			offsets[i++] = {xy, 0}; // NOLINT interfacing with gl
+		}
+	}
+
+	std::memcpy(config_.offsets, offsets.data(), offsets.size() * sizeof(utils::Vec2<std::int32_t>)); // NOLINT interfacing with gl
 }

@@ -2,6 +2,7 @@
 // Created by reg on 8/6/22.
 //
 #include "app.hpp"
+#include "cli_emulator/cellsim_cli_emulator.hpp"
 
 #ifdef GL_DEBUG
 #include <glad/glad.h>
@@ -74,7 +75,11 @@ void CSIM::App::updateRuleConfig(std::shared_ptr<RuleConfig> config, RuleType ru
 		if(rule_ != nullptr) {
 			rule_->destroy();
 		}
-		rule_ = std::make_shared<Rule1D>(rule_config_);
+		switch(rule_type) {
+		case RuleType::BASIC_1D: rule_ = std::make_shared<Rule1D>(rule_config_); break;
+		case RuleType::BASIC_2D: rule_ = std::make_shared<Rule2D>(rule_config_); break;
+		default: break;
+		}
 	} else {
 		rule_->setRuleConfig(rule_config_);
 	}
@@ -108,10 +113,7 @@ void CSIM::App::parseCommand() {
 			cell_map_.extend(args.width, args.height, args.preserve_contents);
 		} else if(cli_emulator_.config.subcmd_colors->parsed()) {
 			// zero state is always black
-			auto& arg_colors = cli_emulator_.config.option_colors;
-			constexpr std::uint32_t BLACK_NON_TRANSPARENT_HEX{0xFF};
-			arg_colors.insert(arg_colors.begin(), BLACK_NON_TRANSPARENT_HEX);
-
+			const auto& arg_colors = cli_emulator_.config.option_colors;
 			std::vector<Vec4<float>> colors(arg_colors.size());
 			std::transform(arg_colors.cbegin(), arg_colors.cend(), colors.begin(), hexColorToFloatColor);
 
@@ -133,7 +135,18 @@ void CSIM::App::parseCommand() {
 						rule_args.pattern_match_code,
 						std::make_shared<CShader>("shaders/bin/1D_binary/comp.spv")
 				), RuleType::BASIC_1D);
+			} else if(cli_emulator_.config.subsubcmd_rule_2dcyclic->parsed()) {
+				const auto& rule_args = cli_emulator_.config.options_2d_cyclic;
+				updateRuleConfig(std::make_shared<RuleConfig2DCyclic>(
+					rule_args.range,
+					rule_args.threshold,
+					rule_args.moore,
+					rule_args.state_insensitive,
+					std::make_shared<CShader>("shaders/bin/2D_cyclic/comp.spv")
+				), RuleType::BASIC_2D);
 			}
+		} else if(cli_emulator_.config.subcmd_clear_color->parsed()) {
+			renderer_.setClearColor(hexColorToFloatColor(cli_emulator_.config.option_clear_color));
 		}
 	} else if(cli_emulator_.config.cmd_clear->parsed()) {
 		cli_emulator_.clear();

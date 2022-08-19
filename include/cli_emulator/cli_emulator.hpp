@@ -6,7 +6,6 @@
 #define CELLSIM_CLI_EMULATOR_HPP
 
 #include <string_view>
-#include <sstream>
 #include <CLI/CLI.hpp>
 
 namespace CSIM {
@@ -15,7 +14,6 @@ namespace CSIM {
  * Provides abstraction of ImGui based cli. Inherit from this class and override
  * setCLI method to set options. Provides CLI11 app field through which it is possible
  * to define subcommands and options.
- * @tparam CLIConfig_t type of config struct to use inside setCLI virtual method
  */
 struct CLIEmulator {
 	static constexpr std::size_t INITIAL_CLI_BUF_SIZE { 4096 }; /*!< initial capacity of input text buffer */
@@ -28,7 +26,6 @@ private:
 	std::string cli_text_{ prompt_ }; /*!< cli text buffer */
 
 	std::int32_t just_parsed_counter_{ 0 }; /*!< counter preventing from false enter key press spam*/
-	std::stringstream parser_output_; /*!< output of the CLI11 parse */
 	std::int64_t current_insert_pos_{ 0 }; /*!< current cursor insert cli output position */
 	std::int64_t next_insert_pos_{ 0 }; /*!< next cursor insert cli output position */
 	//! cursor position before which the edit is disabled
@@ -36,6 +33,17 @@ private:
 	std::int64_t cursor_pos_ { 0 }; /*!< current cursor position (set by imgui callback) */
 	bool cli_text_changed_{ false }; /*!< info to ImGui about text change */
 	bool clear_text_ { false }; /*!< flag is raised in clear() method */
+protected:
+	/**
+	 * Split string with regard to token. There can be arbitrary number of tokens between strings
+	 * @example
+	 * 	word1:token:word2 = word1:token::token: ... :token:word2 = {word1, word2}
+	 * @param str string to split
+	 * @param token
+	 * @return vector of strings
+	 */
+	static std::vector<std::string> splitString(std::string_view str, char token);
+
 public:
 	/**
 	 * CLI emulator constructor

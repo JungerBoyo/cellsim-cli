@@ -17,6 +17,10 @@ struct AppCLIEmulator : public CLIEmulator {
 		/// command
 		CLI::App* cmd_set;
 			/// subcommand
+			CLI::App* subcmd_clear_color;
+				/// options
+				std::uint32_t option_clear_color;
+			/// subcommand
 			CLI::App* subcmd_grid;
 				/// options
 				struct {
@@ -56,6 +60,15 @@ struct AppCLIEmulator : public CLIEmulator {
 						std::uint32_t range;
 						std::string pattern_match_code;
 					} options_1d_binary;
+				/// subsubcommand
+				CLI::App* subsubcmd_rule_2dcyclic;
+					/// options
+					struct {
+						std::int32_t range;
+						std::int32_t threshold;
+						bool moore;
+						bool state_insensitive;
+					} options_2d_cyclic;
 			/// subcommand
 			CLI::App* subcmd_counter;
 			/// options

@@ -40,7 +40,8 @@ void CSIM::CellMap::seed(std::size_t x, std::size_t y, std::size_t range, bool r
 												 bool clip) noexcept {
 	std::fill(cell_states_.begin(), cell_states_.end(), 0);
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-	glGetNamedBufferSubData(state_map_ssbo_id_, 0, static_cast<GLsizei>(width_ * height_),
+	glGetNamedBufferSubData(state_map_ssbo_id_, 0, static_cast<GLsizei>(cell_states_.size() *
+																								 sizeof(std::int32_t)),
 													cell_states_.data());
 	if (!round) {
 		std::int64_t begin_x{ 0 };
