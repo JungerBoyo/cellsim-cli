@@ -25,6 +25,7 @@ Checks: "*,
         -cppcoreguidelines-pro-type-reinterpret-cast,
         -readability-convert-member-functions-to-static,
         -cert-dcl16-c,
+        -readability-function-cognitive-complexity, 
 "
 WarningsAsErrors: ''
 HeaderFilterRegex: ''

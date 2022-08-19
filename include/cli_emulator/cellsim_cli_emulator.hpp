@@ -27,7 +27,6 @@ struct AppCLIEmulator : public CLIEmulator {
 					CLI::Option* hex_color_option;
 					std::uint32_t hex_color;
 					CLI::Option* toggle_option;
-					bool toggle;
 				} options_grid;
 			///	subcommand
 			CLI::App* subcmd_cellmap;
@@ -36,8 +35,10 @@ struct AppCLIEmulator : public CLIEmulator {
 					/// initial values needed for range validators in seed command
 					std::size_t width{ 64 }; // NOLINT initial cellmap extent in x
 					std::size_t height{ 64 }; // NOLINT initial cellmap extent in y
-					bool preserve_contents;
+					CLI::Option* preserve_contents;
 				} options_cellmap;
+				/// subsubcommad
+				CLI::App* subsubcmd_cellmap_clear;
 			/// subcommand
 			CLI::App* subcmd_colors;
 				/// options
@@ -49,7 +50,7 @@ struct AppCLIEmulator : public CLIEmulator {
 					/// options
 					struct {
 						std::uint32_t range;
-						bool center_active;
+						CLI::Option* center_active;
 						std::vector<std::size_t> survival_conditions;
 						std::vector<std::size_t> birth_conditions;
 					} options_1d_totalistic;
@@ -66,8 +67,8 @@ struct AppCLIEmulator : public CLIEmulator {
 					struct {
 						std::int32_t range;
 						std::int32_t threshold;
-						bool moore;
-						bool state_insensitive;
+						CLI::Option* moore;
+						CLI::Option* state_insensitive;
 					} options_2d_cyclic;
 			/// subcommand
 			CLI::App* subcmd_counter;
@@ -81,8 +82,8 @@ struct AppCLIEmulator : public CLIEmulator {
 			std::size_t x;
 			std::size_t y;
 			std::size_t range;
-			bool round;
-			bool clip;
+			CLI::Option* round;
+			CLI::Option* clip;
 		} options_seed;
 	} config;
 

@@ -109,8 +109,12 @@ void CSIM::App::parseCommand() {
 			step_size_ = static_cast<std::int32_t>(cli_emulator_.config.option_counter);
 			frame_counter_ = 0;
 		} else if(cli_emulator_.config.subcmd_cellmap->parsed()) {
-			const auto args = cli_emulator_.config.options_cellmap;
-			cell_map_.extend(args.width, args.height, args.preserve_contents);
+			if(cli_emulator_.config.subsubcmd_cellmap_clear->parsed()) {
+				cell_map_.clear();
+			} else {
+				const auto args = cli_emulator_.config.options_cellmap;
+				cell_map_.extend(args.width, args.height, !args.preserve_contents->empty());
+			}
 		} else if(cli_emulator_.config.subcmd_colors->parsed()) {
 			// zero state is always black
 			const auto& arg_colors = cli_emulator_.config.option_colors;
@@ -120,10 +124,10 @@ void CSIM::App::parseCommand() {
 			renderer_.setColors(colors);
 		} else if(cli_emulator_.config.subcmd_rule->parsed()) {
 			if(cli_emulator_.config.subsubcmd_rule_1dtotalistic->parsed()) {
-				const auto& rule_args = cli_emulator_.config.options_1d_totalistic;
+				auto& rule_args = cli_emulator_.config.options_1d_totalistic;
 				updateRuleConfig(std::make_shared<RuleConfig1DTotalistic>(
 						rule_args.range,
-						rule_args.center_active,
+						!rule_args.center_active->empty(),
 						rule_args.survival_conditions,
 						rule_args.birth_conditions,
 						std::make_shared<CShader>("shaders/bin/1D_totalistic/comp.spv")
@@ -140,8 +144,8 @@ void CSIM::App::parseCommand() {
 				updateRuleConfig(std::make_shared<RuleConfig2DCyclic>(
 					rule_args.range,
 					rule_args.threshold,
-					rule_args.moore,
-					rule_args.state_insensitive,
+					!rule_args.moore->empty(),
+					!rule_args.state_insensitive->empty(),
 					std::make_shared<CShader>("shaders/bin/2D_cyclic/comp.spv")
 				), RuleType::BASIC_2D);
 			}
@@ -152,7 +156,7 @@ void CSIM::App::parseCommand() {
 		cli_emulator_.clear();
 	} else if(cli_emulator_.config.cmd_seed->parsed()) {
 		const auto args = cli_emulator_.config.options_seed;
-		cell_map_.seed(args.x, args.y, args.range, args.round, args.clip);
+		cell_map_.seed(args.x, args.y, args.range, !args.round->empty(), !args.clip->empty());
 	}
 }
 

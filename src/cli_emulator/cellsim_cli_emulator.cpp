@@ -77,9 +77,7 @@ void CSIM::AppCLIEmulator::setCLI() {
 		config.subcmd_grid = config.cmd_set->add_subcommand("grid", "turn on/off grid and modify grid "
 																																"color");
 			config.options_grid.toggle_option = config.subcmd_grid->add_flag("-t,--toggle",
-																																		   config.options_grid.toggle,
-																																		   "toggle grid")
-																																			 ->default_val(false);
+																																		   "toggle grid");
 			config.options_grid.hex_color_option = config.subcmd_grid
 																								    ->add_option("-c,--color",
 																															   config.options_grid.hex_color,
@@ -94,11 +92,11 @@ void CSIM::AppCLIEmulator::setCLI() {
 																				"height of the cell map")
 																			  ->check(CLI::TypeValidator<std::size_t>())
 																				->required();
-			config.subcmd_cellmap->add_flag("-p,--preserve-contents",
-																			config.options_cellmap.preserve_contents,
-																			"if set contents of previous cell map will be preserved"
-																			" starting from the upper left corner")
-																			->default_val(false);
+			config.options_cellmap.preserve_contents =
+					config.subcmd_cellmap->add_flag("-p,--preserve-contents",
+				    															"if set contents of previous cell map will be preserved"
+					    														" starting from the upper left corner");
+			config.subsubcmd_cellmap_clear = config.subcmd_cellmap->add_subcommand("clear", "clears map");
 		config.subcmd_colors = config.cmd_set
 																  ->add_subcommand("colors",
 																							     "modify number of states through new color set");
@@ -135,10 +133,9 @@ void CSIM::AppCLIEmulator::setCLI() {
 														->check(CLI::Range(RuleConfig1DTotalistic::RANGE_LIM.x,
 												 										   RuleConfig1DTotalistic::RANGE_LIM.y))
 														->required();
-				config.subsubcmd_rule_1dtotalistic
-						   ->add_flag("-e,--exclude-center", config.options_1d_totalistic.center_active,
-													"if set then center cell won't be taken into account")
-													->default_val(false);
+				config.options_1d_totalistic.center_active = config.subsubcmd_rule_1dtotalistic
+						   ->add_flag("-e,--exclude-center",
+											    "if set then center cell won't be taken into account");
 				config.subsubcmd_rule_1dtotalistic
 						   ->add_option("-s,--survive-conditions",
 												 	  config.options_1d_totalistic.survival_conditions,
@@ -163,17 +160,14 @@ void CSIM::AppCLIEmulator::setCLI() {
 										  " be born/survive and to die")
 					->check(CLI::Range(RuleConfig2DCyclic::SUM_LIM.x, RuleConfig2DCyclic::SUM_LIM.y))
 					->required();
-				config.subsubcmd_rule_2dcyclic
-					->add_flag("-m,--moore", config.options_2d_cyclic.moore,
-										 "if set then kernel will be moore type otherwise neumann type")
-					->default_val(false);
-				config.subsubcmd_rule_2dcyclic
-					->add_flag("-s,--state-insensitive", config.options_2d_cyclic.state_insensitive,
+				config.options_2d_cyclic.moore = config.subsubcmd_rule_2dcyclic
+					->add_flag("-m,--moore",
+										 "if set then kernel will be moore type otherwise neumann type");
+				config.options_2d_cyclic.state_insensitive = config.subsubcmd_rule_2dcyclic
+					->add_flag("-s,--state-insensitive",
 										 "if set then all cells with state higher than 0 will be accumulated otherwise"
 										 "otherwise only cells with next state after processed cell's state "
-										 "will be accumulated")
-					->default_val(false);
-
+										 "will be accumulated");
 	config.subcmd_counter = config.cmd_set->add_subcommand("counter", "set value of FPS step counter");
 			config.subcmd_counter->add_option("-c,--counter", config.option_counter,
 																			  "value to which to count")
@@ -206,11 +200,9 @@ void CSIM::AppCLIEmulator::setCLI() {
 																	return CLI::DynamicRangeValidatorUtil(std::stoul(num), min,
 																		 														 2*std::min(width, height) + 1);
 																})->required();
-			config.cmd_seed->add_flag("-c,--circle", config.options_seed.round,
-																"switch from the square area to circle area")
-																->default_val(false);
-			config.cmd_seed->add_flag("-l,--clip", config.options_seed.clip,
+			config.options_seed.round =
+				config.cmd_seed->add_flag("-c,--circle", "switch from the square area to circle area");
+			config.options_seed.clip = config.cmd_seed->add_flag("-l,--clip",
 																"clip the seed area if out of bounds if not specified out of bounds"
-																"area will behave as if map has torus topology")
-																->default_val(false);
-	}
+																" area will behave as if map has torus topology");
+}

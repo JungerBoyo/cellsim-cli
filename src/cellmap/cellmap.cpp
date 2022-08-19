@@ -184,6 +184,13 @@ void CSIM::CellMap::extend(std::size_t new_width, std::size_t new_height, bool p
 									 state_map_ssbo_id_);
 }
 
+void CSIM::CellMap::clear() {
+	std::fill(cell_states_.begin(), cell_states_.end(), 0);
+	glNamedBufferSubData(state_map_ssbo_id_, 0,
+											 static_cast<GLsizei>(cell_states_.size() * sizeof(std::int32_t)),
+											 cell_states_.data());
+}
+
 void CSIM::CellMap::generateOffsets() noexcept {
 	for (auto y = 0ul; y < height_; ++y) {
 		for (auto x = 0ul; x < width_; ++x) {

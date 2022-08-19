@@ -39,6 +39,7 @@ struct CellMap {
 
 	void seed(std::size_t x, std::size_t y, std::size_t range, bool round, bool clip) noexcept;
 	void extend(std::size_t new_width, std::size_t new_height, bool preserve_contents);
+	void clear();
 
 	[[nodiscard]] const auto& textureFbo() const { return fbo_; }
 	[[nodiscard]] auto stateMapSsboId() const { return state_map_ssbo_id_; }

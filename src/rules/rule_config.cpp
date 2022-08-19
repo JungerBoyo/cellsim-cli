@@ -81,7 +81,7 @@ CSIM::RuleConfig2DCyclic::RuleConfig2DCyclic(std::int32_t range, std::int32_t th
 												{"State insensitive", state_insensitive ? "Yes" : "No"}}) {
 
 	config_.threshold = threshold;
-	config_.state_insensitive = static_cast<std::int32_t>(moore);
+	config_.state_insensitive = static_cast<std::int32_t>(state_insensitive);
 	std::array<utils::Vec2<std::int32_t>,
 	     			 static_cast<std::size_t>((2*RANGE_LIM.y + 1) * (2*RANGE_LIM.y + 1))> offsets;
 	if (moore) {
@@ -100,8 +100,14 @@ CSIM::RuleConfig2DCyclic::RuleConfig2DCyclic(std::int32_t range, std::int32_t th
 		config_.offset_count = (range - 1) * (1 + (1 + (range-2) * 2)) + size;
 		std::int32_t i=0;
 		for (std::int32_t y=0; y<range-1; ++y) {
+			if (y == 0) {
+				continue;
+			}
 			const auto true_y = y - (range - 1);
 			for (std::int32_t x=0; x<=y; ++x) {
+				if (x == 0) {
+					continue;
+				}
 				const auto true_x = x + 1;
 				offsets[i++] = { true_x, true_y}; // NOLINT interfacing with gl
 				offsets[i++] = {-true_x, true_y}; // NOLINT interfacing with gl
@@ -110,6 +116,9 @@ CSIM::RuleConfig2DCyclic::RuleConfig2DCyclic(std::int32_t range, std::int32_t th
 			}
 		}
 		for (std::int32_t xy=-range; xy<=range; ++xy) {
+			if (xy == 0) {
+				continue;
+			}
 			offsets[i++] = {0, xy}; // NOLINT interfacing with gl
 			offsets[i++] = {xy, 0}; // NOLINT interfacing with gl
 		}
