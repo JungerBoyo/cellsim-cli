@@ -5,9 +5,9 @@
 #ifndef CELLSIM_CELLMAP_HPP
 #define CELLSIM_CELLMAP_HPP
 
+#include "texture_backed_framebuffer.hpp"
 #include "utils/vecs.hpp"
 #include <shaders/shaders.hpp>
-#include "texture_backed_framebuffer.hpp"
 
 #include <memory>
 #include <vector>
@@ -31,18 +31,19 @@ struct CellMap {
 	CellMap(std::size_t width, std::size_t height);
 
 	[[nodiscard]] utils::Vec2<std::int32_t> resolution() const noexcept {
-		return {
-			static_cast<std::int32_t>(width_),
-			static_cast<std::int32_t>(height_)
-		};
+		return {static_cast<std::int32_t>(width_), static_cast<std::int32_t>(height_)};
 	}
 
 	void seed(std::size_t x, std::size_t y, std::size_t range, bool round, bool clip) noexcept;
 	void extend(std::size_t new_width, std::size_t new_height, bool preserve_contents);
 	void clear();
 
-	[[nodiscard]] const auto& textureFbo() const { return fbo_; }
-	[[nodiscard]] auto stateMapSsboId() const { return state_map_ssbo_id_; }
+	[[nodiscard]] const auto &textureFbo() const {
+		return fbo_;
+	}
+	[[nodiscard]] auto stateMapSsboId() const {
+		return state_map_ssbo_id_;
+	}
 
 	void generateOffsets() noexcept;
 

@@ -5,6 +5,6 @@ format_code.bash
 .conanprofile
 shaders/.ninja_log
 .idea
-code_cov.bash
-format.bash
-imgui.ini
+code_cov.sh
+format.sh
+

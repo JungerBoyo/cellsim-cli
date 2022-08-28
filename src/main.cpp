@@ -1,10 +1,10 @@
-#include <string_view>
 #include <stdexcept>
+#include <string_view>
 
 #include <spdlog/spdlog.h>
 
-#include <window/window.hpp>
 #include <app.hpp>
+#include <window/window.hpp>
 
 int main() {
 	try {
@@ -16,7 +16,7 @@ int main() {
 
 #ifdef GLFW_DEBUG
 		CSIM::Window window(width, height, title,
-										    [](int, const char *message) { spdlog::error("[glfw] {}", message); });
+												[](int, const char *message) { spdlog::error("[glfw] {}", message); });
 #else
 		CSIM::Window window(width, height, title, nullptr);
 #endif
@@ -30,7 +30,7 @@ int main() {
 		app.destroy();
 		window.destroy();
 		CSIM::Window::uninitWindowingSystem();
-	} catch (const std::exception& ex) {
+	} catch (const std::exception &ex) {
 		spdlog::critical("[cellsim] {}", ex.what());
 	}
 }

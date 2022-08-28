@@ -30,8 +30,7 @@ struct VFShader : public Shader {
 	std::uint32_t vsh_id_;
 	std::uint32_t fsh_id_;
 
-	VFShader(const std::filesystem::path &vsh_path,
-					 const std::filesystem::path &fsh_path);
+	VFShader(const std::filesystem::path &vsh_path, const std::filesystem::path &fsh_path);
 
 	void destroy() noexcept override;
 };

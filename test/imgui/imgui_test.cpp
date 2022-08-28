@@ -22,17 +22,14 @@ TEST_CASE("Test Dear ImGui") {
 	constexpr int width{640};
 	constexpr int height{480};
 
-	const auto glsl_version =
-			fmt::format("#version {}{}0", CSIM::shconfig::GLVERSION_MAJOR,
-									CSIM::shconfig::GLVERSION_MINOR);
-	auto *window =
-			glfwCreateWindow(width, height, "Test Window", nullptr, nullptr);
+	const auto glsl_version = fmt::format("#version {}{}0", CSIM::shconfig::GLVERSION_MAJOR,
+																				CSIM::shconfig::GLVERSION_MINOR);
+	auto *window = glfwCreateWindow(width, height, "Test Window", nullptr, nullptr);
 	REQUIRE(window != nullptr);
 
 	glfwMakeContextCurrent(window);
 
-	REQUIRE(gladLoadGLLoader(reinterpret_cast<GLADloadproc>(
-							glfwGetProcAddress)) != 0); // NOLINT
+	REQUIRE(gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)) != 0); // NOLINT
 
 	IMGUI_CHECKVERSION();
 	REQUIRE(ImGui::CreateContext() != nullptr);

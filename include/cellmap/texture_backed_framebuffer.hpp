@@ -9,7 +9,7 @@
 
 namespace CSIM {
 
-struct TextureBackedFramebuffer{
+struct TextureBackedFramebuffer {
 	std::int32_t width_;
 	std::int32_t height_;
 	std::uint32_t texture_2d_id_{0};
@@ -21,14 +21,20 @@ struct TextureBackedFramebuffer{
 	void bind_framebuffer() const;
 	void unbind_framebuffer() const;
 
-	[[nodiscard]] auto tex_id() const { return texture_2d_id_; }
+	[[nodiscard]] auto tex_id() const {
+		return texture_2d_id_;
+	}
 
-	[[nodiscard]]	auto width() const { return width_; }
-	[[nodiscard]]	auto height() const { return height_; }
+	[[nodiscard]] auto width() const {
+		return width_;
+	}
+	[[nodiscard]] auto height() const {
+		return height_;
+	}
 
 	void destroy();
 };
 
-}
+} // namespace CSIM
 
 #endif // CELLSIM_TEXTURE_BACKED_FRAMEBUFFER_HPP

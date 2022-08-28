@@ -3,8 +3,8 @@
 //
 #include "rules/rule.hpp"
 #include "shconfig.hpp"
-#include <glad/glad.h>
 #include <array>
+#include <glad/glad.h>
 
 using namespace CSIM::utils;
 
@@ -22,8 +22,7 @@ CSIM::Rule::Rule(std::shared_ptr<RuleConfig> rule_config)
 	/// allocating storage
 	glNamedBufferStorage(base_config_ubo_id_, sizeof(BaseConfig), &base_config_,
 											 GL_DYNAMIC_STORAGE_BIT);
-	glNamedBufferStorage(config_ubo_id_,
-											 static_cast<GLsizeiptr>(rule_config_->size()),
+	glNamedBufferStorage(config_ubo_id_, static_cast<GLsizeiptr>(rule_config_->size()),
 											 rule_config_->data(), GL_DYNAMIC_STORAGE_BIT);
 
 	/// binding buffers to binding indices
@@ -33,8 +32,7 @@ CSIM::Rule::Rule(std::shared_ptr<RuleConfig> rule_config)
 	glBindBufferBase(GL_UNIFORM_BUFFER, shconfig::CONFIG_UBO_BINDING_LOCATION, config_ubo_id_);
 	rule_config_->getShader()->unbind();
 }
-void CSIM::Rule::setBaseConfig(BaseConfig config,
-															 bool update_iteration) noexcept {
+void CSIM::Rule::setBaseConfig(BaseConfig config, bool update_iteration) noexcept {
 	if (update_iteration) {
 		base_config_ = config;
 	} else {
@@ -44,13 +42,11 @@ void CSIM::Rule::setBaseConfig(BaseConfig config,
 	glNamedBufferSubData(base_config_ubo_id_, 0, sizeof(BaseConfig), &config);
 }
 
-
 void CSIM::Rule::setRuleConfig(std::shared_ptr<RuleConfig> rule_config) {
 	if (rule_config_->size() < rule_config->size()) {
 		glDeleteBuffers(1, &config_ubo_id_);
 		glCreateBuffers(1, &config_ubo_id_);
-		glNamedBufferStorage(config_ubo_id_,
-												 static_cast<GLsizeiptr>(rule_config->size()),
+		glNamedBufferStorage(config_ubo_id_, static_cast<GLsizeiptr>(rule_config->size()),
 												 rule_config->data(), GL_DYNAMIC_STORAGE_BIT);
 		glBindBufferBase(GL_UNIFORM_BUFFER, shconfig::CONFIG_UBO_BINDING_LOCATION, config_ubo_id_);
 	} else {
@@ -70,8 +66,7 @@ void CSIM::Rule::destroy() {
 
 /// Rule1D impl ///
 
-CSIM::Rule1D::Rule1D(std::shared_ptr<RuleConfig> rule_config)
-		: Rule(std::move(rule_config)) {
+CSIM::Rule1D::Rule1D(std::shared_ptr<RuleConfig> rule_config) : Rule(std::move(rule_config)) {
 }
 
 void CSIM::Rule1D::step(const CellMap &cell_map, std::int32_t state_count) noexcept { // NOLINT
@@ -97,8 +92,7 @@ void CSIM::Rule1D::destroy() {
 
 /// Rule2D impl ///
 
-CSIM::Rule2D::Rule2D(std::shared_ptr<RuleConfig> rule_config)
-		: Rule(std::move(rule_config)) {
+CSIM::Rule2D::Rule2D(std::shared_ptr<RuleConfig> rule_config) : Rule(std::move(rule_config)) {
 }
 
 void CSIM::Rule2D::step(const CellMap &cell_map, std::int32_t state_count) noexcept {
@@ -111,18 +105,18 @@ void CSIM::Rule2D::step(const CellMap &cell_map, std::int32_t state_count) noexc
 
 	this->setBaseConfig(config);
 
-	const auto size = static_cast<GLsizeiptr>(
-			sizeof(std::int32_t) * config.map_resolution.x * config.map_resolution.y);
+	const auto size = static_cast<GLsizeiptr>(sizeof(std::int32_t) * config.map_resolution.x *
+																						config.map_resolution.y);
 	if (config.map_resolution.x != previous_map_resolution_.x ||
 			config.map_resolution.y != previous_map_resolution_.y) {
-		if (state_map_copy_ssbo_id_ != 0)	{
+		if (state_map_copy_ssbo_id_ != 0) {
 			glDeleteBuffers(1, &state_map_copy_ssbo_id_);
 		}
 		glCreateBuffers(1, &state_map_copy_ssbo_id_);
 
 		glNamedBufferStorage(state_map_copy_ssbo_id_, size, nullptr, 0);
 
-		constexpr GLuint binding{ 6 };
+		constexpr GLuint binding{6};
 		glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, state_map_copy_ssbo_id_);
 
 		previous_map_resolution_ = config.map_resolution;

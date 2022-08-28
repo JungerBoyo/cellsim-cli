@@ -5,8 +5,8 @@
 #ifndef CELLSIM_CLI_EMULATOR_HPP
 #define CELLSIM_CLI_EMULATOR_HPP
 
-#include <string_view>
 #include <CLI/CLI.hpp>
+#include <string_view>
 
 namespace CSIM {
 
@@ -16,23 +16,24 @@ namespace CSIM {
  * to define subcommands and options.
  */
 struct CLIEmulator {
-	static constexpr std::size_t INITIAL_CLI_BUF_SIZE { 4096 }; /*!< initial capacity of input text buffer */
+	static constexpr std::size_t INITIAL_CLI_BUF_SIZE{
+			4096};			 /*!< initial capacity of input text buffer */
 	CLI::App parser; /*!< CLI11 app */
 
 private:
 	std::string prompt_; /*!< prompt that will be shown in a CLI @note  */
-	std::string label_; /*!< title of cli window */
+	std::string label_;	 /*!< title of cli window */
 
-	std::string cli_text_{ prompt_ }; /*!< cli text buffer */
+	std::string cli_text_{prompt_}; /*!< cli text buffer */
 
-	std::int32_t just_parsed_counter_{ 0 }; /*!< counter preventing from false enter key press spam*/
-	std::int64_t current_insert_pos_{ 0 }; /*!< current cursor insert cli output position */
-	std::int64_t next_insert_pos_{ 0 }; /*!< next cursor insert cli output position */
+	std::int32_t just_parsed_counter_{0}; /*!< counter preventing from false enter key press spam*/
+	std::int64_t current_insert_pos_{0};	/*!< current cursor insert cli output position */
+	std::int64_t next_insert_pos_{0};			/*!< next cursor insert cli output position */
 	//! cursor position before which the edit is disabled
-	std::int64_t blocking_cursor_pos_{ static_cast<std::int64_t>(prompt_.size()) - 1 };
-	std::int64_t cursor_pos_ { 0 }; /*!< current cursor position (set by imgui callback) */
-	bool cli_text_changed_{ false }; /*!< info to ImGui about text change */
-	bool clear_text_ { false }; /*!< flag is raised in clear() method */
+	std::int64_t blocking_cursor_pos_{static_cast<std::int64_t>(prompt_.size()) - 1};
+	std::int64_t cursor_pos_{0};	 /*!< current cursor position (set by imgui callback) */
+	bool cli_text_changed_{false}; /*!< info to ImGui about text change */
+	bool clear_text_{false};			 /*!< flag is raised in clear() method */
 protected:
 	/**
 	 * Split string with regard to token. There can be arbitrary number of tokens between strings
@@ -52,8 +53,9 @@ public:
 	 * @param description description of CLI11 app.
 	 * @param prompt text that will be prompt in a CLI. '>' char will be appended.
 	 */
-	explicit CLIEmulator(std::string_view title, std::string_view description, std::string_view prompt)
-			: parser(description.data()), prompt_(std::string(prompt) + ">  "), label_(title)  {
+	explicit CLIEmulator(std::string_view title, std::string_view description,
+											 std::string_view prompt)
+			: parser(description.data()), prompt_(std::string(prompt) + ">  "), label_(title) {
 		cli_text_.reserve(INITIAL_CLI_BUF_SIZE);
 	}
 
@@ -79,6 +81,6 @@ public:
 
 	virtual ~CLIEmulator() = default;
 };
-}
+} // namespace CSIM
 
 #endif // CELLSIM_CLI_EMULATOR_HPP

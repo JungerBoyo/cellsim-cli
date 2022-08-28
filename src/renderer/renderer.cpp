@@ -47,17 +47,15 @@ CSIM::Renderer::Renderer(std::shared_ptr<Shader> render_shader, std::shared_ptr<
 	glBindBufferBase(GL_UNIFORM_BUFFER, shconfig::COLORS_UBO_BINDING_LOCATION, colors_ubo_id_);
 }
 
-void CSIM::Renderer::setColors(const std::vector<Vec4<float>>& colors) {
+void CSIM::Renderer::setColors(const std::vector<Vec4<float>> &colors) {
 	color_count_ = std::clamp(colors.size(), static_cast<std::size_t>(0), shconfig::MAX_COLORS);
 	std::copy_n(colors.begin(), color_count_, colors_.begin());
 
 	glNamedBufferSubData(colors_ubo_id_, 0,
-											 static_cast<GLsizeiptr>(sizeof(Vec4<float>) * color_count_),
-											 colors_.data());
+											 static_cast<GLsizeiptr>(sizeof(Vec4<float>) * color_count_), colors_.data());
 }
 
-void CSIM::Renderer::updateView(Vec2<float> offset_vec,
-																float scale_vec) noexcept {
+void CSIM::Renderer::updateView(Vec2<float> offset_vec, float scale_vec) noexcept {
 	view_config_.offset.x += time_step_ * offset_vec.x;
 	view_config_.offset.y += time_step_ * offset_vec.y;
 
@@ -71,11 +69,9 @@ void CSIM::Renderer::draw(Vec2<int> win_size, const CellMap &cellmap) noexcept {
 	glBindVertexArray(vao_id_);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_);
 
-	view_config_.aspect_ratio =
-			static_cast<float>(win_size.y) / static_cast<float>(win_size.x);
+	view_config_.aspect_ratio = static_cast<float>(win_size.y) / static_cast<float>(win_size.x);
 
-	glNamedBufferSubData(view_config_ubo_id_, 0, sizeof(ViewConfig),
-											 &view_config_);
+	glNamedBufferSubData(view_config_ubo_id_, 0, sizeof(ViewConfig), &view_config_);
 	glViewport(0, 0, win_size.x, win_size.y);
 
 	// inserting memory barrier for a shader storages because of the state_map
@@ -99,14 +95,14 @@ void CSIM::Renderer::draw(Vec2<int> win_size, const CellMap &cellmap) noexcept {
 	glClear(GL_COLOR_BUFFER_BIT);
 	render_shader_->bind();
 	const auto scale = 2.f / static_cast<float>(cellmap_fbo.height());
-	ViewConfig cellmap_view_config {
-			.offset = { -1.f - scale*(-.5f), 1.f - scale * .5f}, // NOLINT (-1.f, 1.f) = left upper corner
-	  																											 // (-.5f, .5f) = left upper corner
-																													 // of cell map
+	ViewConfig cellmap_view_config{
+			.offset = {-1.f - scale * (-.5f),
+								 1.f - scale * .5f}, // NOLINT (-1.f, 1.f) = left upper corner
+																		 // (-.5f, .5f) = left upper corner
+																		 // of cell map
 			.scale = scale,
-			.aspect_ratio = static_cast<float>(cellmap_fbo.width()) /
-										  static_cast<float>(cellmap_fbo.height())
-	};
+			.aspect_ratio =
+					static_cast<float>(cellmap_fbo.width()) / static_cast<float>(cellmap_fbo.height())};
 	glNamedBufferSubData(view_config_ubo_id_, 0, sizeof(ViewConfig), &cellmap_view_config);
 	glViewport(0, 0, cellmap_fbo.width(), cellmap_fbo.height());
 

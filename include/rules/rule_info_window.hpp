@@ -9,7 +9,7 @@
 #include <rules/rule_config.hpp>
 
 namespace CSIM {
-	void drawRuleInfoWindow(const std::shared_ptr<Rule>& rule,
-												  const std::shared_ptr<RuleConfig>& rule_config);
+void drawRuleInfoWindow(const std::shared_ptr<Rule> &rule,
+												const std::shared_ptr<RuleConfig> &rule_config);
 }
 #endif // CELLSIM_RULE_INFO_WINDOW_HPP

@@ -10,8 +10,8 @@
 
 #include <memory>
 #include <string_view>
-#include <vector>
 #include <utility>
+#include <vector>
 
 namespace CSIM {
 
@@ -26,8 +26,7 @@ private:
 	std::shared_ptr<Shader> step_shader_; /// shader
 
 public:
-	explicit RuleConfig(std::shared_ptr<Shader> step_shader)
-			: step_shader_(std::move(step_shader)) {
+	explicit RuleConfig(std::shared_ptr<Shader> step_shader) : step_shader_(std::move(step_shader)) {
 	}
 
 	/**
@@ -39,7 +38,7 @@ public:
 	 * get config serialized to show in info window.
 	 * @return array of config:value pairs
 	 */
-	[[nodiscard]]	virtual const std::vector<std::pair<std::string, std::string>>&
+	[[nodiscard]] virtual const std::vector<std::pair<std::string, std::string>> &
 	configSerialized() const = 0;
 
 	/**
@@ -51,8 +50,12 @@ public:
 	 */
 	[[nodiscard]] virtual const void *data() const = 0;
 
-	[[nodiscard]] std::shared_ptr<const Shader> getShader() const { return step_shader_; }
-	virtual void destroy() { step_shader_->destroy(); }
+	[[nodiscard]] std::shared_ptr<const Shader> getShader() const {
+		return step_shader_;
+	}
+	virtual void destroy() {
+		step_shader_->destroy();
+	}
 
 	virtual ~RuleConfig() = default;
 };
@@ -69,13 +72,13 @@ struct RuleConfig1DTotalistic : public RuleConfig {
 
 private:
 	/**
-   * config defines range, center active and b/s option arrays
-   */
+	 * config defines range, center active and b/s option arrays
+	 */
 	struct Config {
 		std::int32_t range;
 		std::int32_t center_active;
 		alignas(16) std::int32_t survival_conditions_hashmap[MAX_OPTIONS]; // NOLINT interfacing with gl
-		alignas(16) std::int32_t birth_conditions_hashmap[MAX_OPTIONS]; // NOLINT interfacing with gl
+		alignas(16) std::int32_t birth_conditions_hashmap[MAX_OPTIONS];		 // NOLINT interfacing with gl
 	};
 
 	Config config_;
@@ -90,19 +93,27 @@ public:
 	 * @param step_shader compute shader used by the rule
 	 */
 	RuleConfig1DTotalistic( // NOLINT config is populated in the body
-			std::int32_t range, bool center_active,
-			const std::vector<std::size_t>& survival_conditions,
-			const std::vector<std::size_t>& birth_conditions,
-			std::shared_ptr<Shader> step_shader);
+			std::int32_t range, bool center_active, const std::vector<std::size_t> &survival_conditions,
+			const std::vector<std::size_t> &birth_conditions, std::shared_ptr<Shader> step_shader);
 
-	[[nodiscard]]	std::string_view ruleConfigName() const override { return "1D Totalistic"; }
-	[[nodiscard]]	const std::vector<std::pair<std::string, std::string>>&
-	configSerialized() const override { return config_serialized_; }
+	[[nodiscard]] std::string_view ruleConfigName() const override {
+		return "1D Totalistic";
+	}
+	[[nodiscard]] const std::vector<std::pair<std::string, std::string>> &
+	configSerialized() const override {
+		return config_serialized_;
+	}
 
-	[[nodiscard]] std::size_t size() const override { return sizeof(Config); }
-	[[nodiscard]] const void *data() const override { return &config_; }
+	[[nodiscard]] std::size_t size() const override {
+		return sizeof(Config);
+	}
+	[[nodiscard]] const void *data() const override {
+		return &config_;
+	}
 
-	void destroy() override { RuleConfig::destroy(); }
+	void destroy() override {
+		RuleConfig::destroy();
+	}
 };
 
 /**
@@ -141,15 +152,24 @@ public:
 		parsePatternMatchCode(pattern_match_code);
 	}
 
-	[[nodiscard]]	std::string_view ruleConfigName() const override { return "1D Binary"; }
-	[[nodiscard]]	const std::vector<std::pair<std::string, std::string>>&
-	configSerialized() const override { return config_serialized_; }
+	[[nodiscard]] std::string_view ruleConfigName() const override {
+		return "1D Binary";
+	}
+	[[nodiscard]] const std::vector<std::pair<std::string, std::string>> &
+	configSerialized() const override {
+		return config_serialized_;
+	}
 
+	[[nodiscard]] std::size_t size() const override {
+		return sizeof(Config);
+	}
+	[[nodiscard]] const void *data() const override {
+		return &config_;
+	}
 
-	[[nodiscard]] std::size_t size() const override { return sizeof(Config); }
-	[[nodiscard]] const void *data() const override { return &config_; }
-
-	void destroy() override { RuleConfig::destroy(); }
+	void destroy() override {
+		RuleConfig::destroy();
+	}
 
 private:
 	/**
@@ -197,25 +217,35 @@ public:
 	RuleConfig2DCyclic(std::int32_t range, std::int32_t threshold, bool moore, bool state_insensitive,
 										 bool center_active, std::shared_ptr<Shader> step_shader);
 
-	[[nodiscard]]	std::string_view ruleConfigName() const override { return "2D Cyclic"; }
-	[[nodiscard]]	const std::vector<std::pair<std::string, std::string>>&
-	configSerialized() const override { return config_serialized_; }
+	[[nodiscard]] std::string_view ruleConfigName() const override {
+		return "2D Cyclic";
+	}
+	[[nodiscard]] const std::vector<std::pair<std::string, std::string>> &
+	configSerialized() const override {
+		return config_serialized_;
+	}
 
-	[[nodiscard]] std::size_t size() const override { return sizeof(Config); }
-	[[nodiscard]] const void *data() const override { return &config_; }
+	[[nodiscard]] std::size_t size() const override {
+		return sizeof(Config);
+	}
+	[[nodiscard]] const void *data() const override {
+		return &config_;
+	}
 
-	void destroy() override { RuleConfig::destroy(); }
+	void destroy() override {
+		RuleConfig::destroy();
+	}
 };
 
 struct RuleConfig2DLife : public RuleConfig {
-	static constexpr std::size_t MAX_OPTIONS{ 256 }; // 2^8 / 4
+	static constexpr std::size_t MAX_OPTIONS{256}; // 2^8 / 4
 private:
 	struct Config {
 		std::int32_t state_insensitive;
 		std::int32_t offsets_count;
-		alignas(16) utils::Vec4<std::int32_t> offsets[9]; // NOLINT interfacing with gl
+		alignas(16) utils::Vec4<std::int32_t> offsets[9];									 // NOLINT interfacing with gl
 		alignas(16) std::int32_t survival_conditions_hashmap[MAX_OPTIONS]; // NOLINT interfacing with gl
-		alignas(16) std::int32_t birth_conditions_hashmap[MAX_OPTIONS]; // NOLINT interfacing with gl
+		alignas(16) std::int32_t birth_conditions_hashmap[MAX_OPTIONS];		 // NOLINT interfacing with gl
 	};
 
 	Config config_;
@@ -223,19 +253,28 @@ private:
 
 public:
 	RuleConfig2DLife(bool moore, bool state_insensitive, bool center_active,
-									 const std::vector<std::size_t>& survival_conditions,
-									 const std::vector<std::size_t>& birth_conditions,
+									 const std::vector<std::size_t> &survival_conditions,
+									 const std::vector<std::size_t> &birth_conditions,
 									 std::shared_ptr<Shader> step_shader);
 
-	[[nodiscard]]	std::string_view ruleConfigName() const override { return "2D Cyclic"; }
-	[[nodiscard]]	const std::vector<std::pair<std::string, std::string>>&
-	configSerialized() const override { return config_serialized_; }
+	[[nodiscard]] std::string_view ruleConfigName() const override {
+		return "2D Cyclic";
+	}
+	[[nodiscard]] const std::vector<std::pair<std::string, std::string>> &
+	configSerialized() const override {
+		return config_serialized_;
+	}
 
-	[[nodiscard]] std::size_t size() const override { return sizeof(Config); }
-	[[nodiscard]] const void *data() const override { return &config_; }
+	[[nodiscard]] std::size_t size() const override {
+		return sizeof(Config);
+	}
+	[[nodiscard]] const void *data() const override {
+		return &config_;
+	}
 
-	void destroy() override { RuleConfig::destroy(); }
-
+	void destroy() override {
+		RuleConfig::destroy();
+	}
 };
 
 } // namespace CSIM
