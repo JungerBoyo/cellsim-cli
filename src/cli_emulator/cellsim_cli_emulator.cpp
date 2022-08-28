@@ -3,7 +3,8 @@
 //
 #include "cli_emulator/cellsim_cli_emulator.hpp"
 
-#include "shconfig.hpp"
+#include <project_config/config.hpp>
+#include <shconfig.hpp>
 #include <rules/rule_config.hpp>
 
 #include <fmt/format.h>
@@ -11,6 +12,8 @@
 CSIM::AppCLIEmulator::AppCLIEmulator(std::string_view title, std::string_view description,
 																		 std::string_view prompt)
 		: CLIEmulator(title, description, prompt) {
+	this->parser.set_version_flag("-v,--version",
+																fmt::format("{}, {}", title, cmake::config::project_version));
 }
 
 namespace CLI {

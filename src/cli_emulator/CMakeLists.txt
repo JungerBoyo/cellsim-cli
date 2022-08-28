@@ -18,6 +18,11 @@ target_link_system_libraries(cli_emulator_IMPL
 
 add_library(cellsim_cli_emulator_IMPL STATIC cellsim_cli_emulator.cpp)
 
+target_include_directories(cellsim_cli_emulator_IMPL
+  PRIVATE
+    "${CMAKE_BINARY_DIR}/config"
+)
+
 target_link_libraries(cellsim_cli_emulator_IMPL
   PUBLIC
     cellsim_cli_emulator_INC

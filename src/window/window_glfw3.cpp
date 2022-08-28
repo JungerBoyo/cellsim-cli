@@ -4,8 +4,8 @@
 #include "window/window.hpp"
 #include <shconfig.hpp>
 
-#include <GLFW/glfw3.h>
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include <stdexcept>
 
 void CSIM::Window::loadGL() {
