@@ -34,6 +34,7 @@ struct App {
 	std::int32_t step_size_{ 30 }; // NOLINT
 	std::int32_t frame_counter_{ 0 };
 	float last_frame_time_{ 0.f };
+	bool simulation_stopped_{ false };
 
 	explicit App(Window& window);
 

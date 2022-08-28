@@ -114,12 +114,13 @@ bool CSIM::CLIEmulator::draw(bool parse, bool backspace) {
 		cli_text_changed_ = true;
 	}
 
+	const bool readonly = !parse && cursor_pos_ <= blocking_cursor_pos_ &&
+												!(cursor_pos_ == blocking_cursor_pos_ && !backspace);
+
 	ImGui::Begin(label_.c_str(), nullptr, 0);
 	ImGui::InputTextMultiline("##source", cli_text_, cli_text_changed_, current_insert_pos_,
 														clear_text_, static_cast<std::int32_t>(prompt_.length())-1, cursor_pos_,
-														/// if ~ENTER and BACKSPACE and cursor is <= blocking position
-														/// then switch to readonly mode
-														!parse && backspace && cursor_pos_ <= blocking_cursor_pos_);
+														readonly);
 	ImGui::End();
 
 	if (cli_text_changed_) {

@@ -80,7 +80,7 @@ void CSIM::Renderer::draw(Vec2<int> win_size, const CellMap &cellmap) noexcept {
 
 	// inserting memory barrier for a shader storages because of the state_map
 	// which is modified in during the step
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+	glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
 	const auto instance_count = static_cast<GLsizei>(cellmap.cell_offsets_.size());
 	glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, QUAD.size() / 2, instance_count);
 	render_shader_->unbind();
@@ -110,6 +110,7 @@ void CSIM::Renderer::draw(Vec2<int> win_size, const CellMap &cellmap) noexcept {
 	glNamedBufferSubData(view_config_ubo_id_, 0, sizeof(ViewConfig), &cellmap_view_config);
 	glViewport(0, 0, cellmap_fbo.width(), cellmap_fbo.height());
 
+	glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
 	glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, QUAD.size() / 2, instance_count);
 	render_shader_->unbind();
 	cellmap_fbo.unbind_framebuffer();

@@ -171,16 +171,13 @@ struct RuleConfig2DCyclic : public RuleConfig {
 	static constexpr Vec2<std::uint32_t> RANGE_LIM{0, 10};
 
 private:
-	static constexpr std::size_t offsets_capacity{
-		(((2 * RANGE_LIM.y + 1) * (2 * RANGE_LIM.y + 1)) / 2) +
-		((((2 * RANGE_LIM.y + 1) * (2 * RANGE_LIM.y + 1)) % 2) != 0 ? 1 : 0) // NOLINT
-	};
+	static constexpr std::uint32_t offsets_capacity{((2 * RANGE_LIM.y + 1) * (2 * RANGE_LIM.y + 1))};
 
 	struct Config {
 		std::int32_t threshold;
 		std::int32_t state_insensitive;
-		std::int32_t offset_count;
-		alignas(16) Vec4<std::int32_t> offsets[offsets_capacity]; // NOLINT interfacing with gl
+		std::int32_t offsets_count;
+		alignas(16) Vec2<std::int32_t> offsets[offsets_capacity]; // NOLINT interfacing with gl
 	};
 
 	Config config_;
@@ -194,10 +191,11 @@ public:
 	 * @param threshold  maps to Config::threshold
 	 * @param moore info needed for offsets creation
 	 * @param state_insensitive  maps to Config::state_insensitive
+	 * @param center_active info needed for offsets creation
 	 * @param step_shader
 	 */
 	RuleConfig2DCyclic(std::int32_t range, std::int32_t threshold, bool moore, bool state_insensitive,
-										 std::shared_ptr<Shader> step_shader);
+										 bool center_active, std::shared_ptr<Shader> step_shader);
 
 	[[nodiscard]]	std::string_view ruleConfigName() const override { return "2D Cyclic"; }
 	[[nodiscard]]	const std::vector<std::pair<std::string, std::string>>&
@@ -207,6 +205,37 @@ public:
 	[[nodiscard]] const void *data() const override { return &config_; }
 
 	void destroy() override { RuleConfig::destroy(); }
+};
+
+struct RuleConfig2DLife : public RuleConfig {
+	static constexpr std::size_t MAX_OPTIONS{ 256 }; // 2^8 / 4
+private:
+	struct Config {
+		std::int32_t state_insensitive;
+		std::int32_t offsets_count;
+		alignas(16) utils::Vec4<std::int32_t> offsets[9]; // NOLINT interfacing with gl
+		alignas(16) std::int32_t survival_conditions_hashmap[MAX_OPTIONS]; // NOLINT interfacing with gl
+		alignas(16) std::int32_t birth_conditions_hashmap[MAX_OPTIONS]; // NOLINT interfacing with gl
+	};
+
+	Config config_;
+	std::vector<std::pair<std::string, std::string>> config_serialized_;
+
+public:
+	RuleConfig2DLife(bool moore, bool state_insensitive, bool center_active,
+									 const std::vector<std::size_t>& survival_conditions,
+									 const std::vector<std::size_t>& birth_conditions,
+									 std::shared_ptr<Shader> step_shader);
+
+	[[nodiscard]]	std::string_view ruleConfigName() const override { return "2D Cyclic"; }
+	[[nodiscard]]	const std::vector<std::pair<std::string, std::string>>&
+	configSerialized() const override { return config_serialized_; }
+
+	[[nodiscard]] std::size_t size() const override { return sizeof(Config); }
+	[[nodiscard]] const void *data() const override { return &config_; }
+
+	void destroy() override { RuleConfig::destroy(); }
+
 };
 
 } // namespace CSIM

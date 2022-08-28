@@ -37,8 +37,6 @@ struct AppCLIEmulator : public CLIEmulator {
 					std::size_t height{ 64 }; // NOLINT initial cellmap extent in y
 					CLI::Option* preserve_contents;
 				} options_cellmap;
-				/// subsubcommad
-				CLI::App* subsubcmd_cellmap_clear;
 			/// subcommand
 			CLI::App* subcmd_colors;
 				/// options
@@ -50,7 +48,7 @@ struct AppCLIEmulator : public CLIEmulator {
 					/// options
 					struct {
 						std::uint32_t range;
-						CLI::Option* center_active;
+						CLI::Option* exclude_center;
 						std::vector<std::size_t> survival_conditions;
 						std::vector<std::size_t> birth_conditions;
 					} options_1d_totalistic;
@@ -69,13 +67,29 @@ struct AppCLIEmulator : public CLIEmulator {
 						std::int32_t threshold;
 						CLI::Option* moore;
 						CLI::Option* state_insensitive;
+						CLI::Option* exclude_center;
 					} options_2d_cyclic;
+				/// subsubcommand
+				CLI::App* subsubcmd_rule_2dlife;
+					/// options
+					struct {
+						CLI::Option* moore;
+						CLI::Option* state_insensitive;
+						CLI::Option* exclude_center;
+						std::vector<std::size_t> survival_conditions;
+						std::vector<std::size_t> birth_conditions;
+					} options_2d_life;
 			/// subcommand
 			CLI::App* subcmd_counter;
 			/// options
 				std::uint32_t option_counter{0};
 		/// command
 		CLI::App* cmd_clear;
+			/// options
+			struct {
+				CLI::Option* clear_cli;
+				CLI::Option* clear_map;
+			} options_clear;
 		/// command
 		CLI::App* cmd_seed;
 		struct {
@@ -85,6 +99,10 @@ struct AppCLIEmulator : public CLIEmulator {
 			CLI::Option* round;
 			CLI::Option* clip;
 		} options_seed;
+		/// command
+		CLI::App* cmd_stop;
+		/// command
+		CLI::App* cmd_start;
 	} config;
 
 	/**

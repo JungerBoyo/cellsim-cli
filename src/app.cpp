@@ -109,12 +109,8 @@ void CSIM::App::parseCommand() {
 			step_size_ = static_cast<std::int32_t>(cli_emulator_.config.option_counter);
 			frame_counter_ = 0;
 		} else if(cli_emulator_.config.subcmd_cellmap->parsed()) {
-			if(cli_emulator_.config.subsubcmd_cellmap_clear->parsed()) {
-				cell_map_.clear();
-			} else {
-				const auto args = cli_emulator_.config.options_cellmap;
-				cell_map_.extend(args.width, args.height, !args.preserve_contents->empty());
-			}
+			const auto args = cli_emulator_.config.options_cellmap;
+			cell_map_.extend(args.width, args.height, !args.preserve_contents->empty());
 		} else if(cli_emulator_.config.subcmd_colors->parsed()) {
 			// zero state is always black
 			const auto& arg_colors = cli_emulator_.config.option_colors;
@@ -124,10 +120,10 @@ void CSIM::App::parseCommand() {
 			renderer_.setColors(colors);
 		} else if(cli_emulator_.config.subcmd_rule->parsed()) {
 			if(cli_emulator_.config.subsubcmd_rule_1dtotalistic->parsed()) {
-				auto& rule_args = cli_emulator_.config.options_1d_totalistic;
+				const auto& rule_args = cli_emulator_.config.options_1d_totalistic;
 				updateRuleConfig(std::make_shared<RuleConfig1DTotalistic>(
 						rule_args.range,
-						!rule_args.center_active->empty(),
+						rule_args.exclude_center->empty(),
 						rule_args.survival_conditions,
 						rule_args.birth_conditions,
 						std::make_shared<CShader>("shaders/bin/1D_totalistic/comp.spv")
@@ -146,17 +142,36 @@ void CSIM::App::parseCommand() {
 					rule_args.threshold,
 					!rule_args.moore->empty(),
 					!rule_args.state_insensitive->empty(),
+					rule_args.exclude_center->empty(),
 					std::make_shared<CShader>("shaders/bin/2D_cyclic/comp.spv")
+				), RuleType::BASIC_2D);
+			} else if(cli_emulator_.config.subsubcmd_rule_2dlife->parsed()) {
+				const auto& rule_args = cli_emulator_.config.options_2d_life;
+				updateRuleConfig(std::make_shared<RuleConfig2DLife>(
+					!rule_args.moore->empty(),
+					!rule_args.state_insensitive->empty(),
+					rule_args.exclude_center->empty(),
+					rule_args.survival_conditions,
+					rule_args.birth_conditions,
+					std::make_shared<CShader>("shaders/bin/2D_life/comp.spv")
 				), RuleType::BASIC_2D);
 			}
 		} else if(cli_emulator_.config.subcmd_clear_color->parsed()) {
 			renderer_.setClearColor(hexColorToFloatColor(cli_emulator_.config.option_clear_color));
 		}
 	} else if(cli_emulator_.config.cmd_clear->parsed()) {
-		cli_emulator_.clear();
+		if (!cli_emulator_.config.options_clear.clear_cli->empty()) {
+			cli_emulator_.clear();
+		} if (!cli_emulator_.config.options_clear.clear_map->empty()) {
+			cell_map_.clear();
+		}
 	} else if(cli_emulator_.config.cmd_seed->parsed()) {
 		const auto args = cli_emulator_.config.options_seed;
 		cell_map_.seed(args.x, args.y, args.range, !args.round->empty(), !args.clip->empty());
+	} else if(cli_emulator_.config.cmd_stop->parsed()) {
+		simulation_stopped_ = true;
+	} else if(cli_emulator_.config.cmd_start->parsed()) {
+		simulation_stopped_ = false;
 	}
 }
 
@@ -173,9 +188,11 @@ void CSIM::App::run() {
 
 		ImGui::BeginFrameCustom();
 		if(rule_ != nullptr && rule_config_ != nullptr)	{
-			if(++frame_counter_; frame_counter_ == step_size_) {
-				rule_->step(cell_map_, static_cast<std::int32_t>(renderer_.colorCount()));
-				frame_counter_ = 0;
+			if(!simulation_stopped_) {
+				if(++frame_counter_; frame_counter_ == step_size_) {
+					rule_->step(cell_map_, static_cast<std::int32_t>(renderer_.colorCount()));
+					frame_counter_ = 0;
+				}
 			}
 			CSIM::drawRuleInfoWindow(rule_, rule_config_);
 		}
@@ -189,7 +206,8 @@ void CSIM::App::run() {
 		ImGui::Begin("Technical Info");
 		ImGui::Text("window width :: %i", width);
 		ImGui::Text("window height :: %i", height);
-		ImGui::Text("FPS :: %f", 1.f / renderer_.time_step_);
+		ImGui::Text("FPS :: %i", static_cast<std::int32_t>(1.f / renderer_.time_step_));
+		ImGui::Text("Counter :: %i", frame_counter_);
 		ImGui::End();
 
 		ImGui::Begin("States");

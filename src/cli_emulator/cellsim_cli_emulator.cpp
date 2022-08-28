@@ -96,7 +96,6 @@ void CSIM::AppCLIEmulator::setCLI() {
 					config.subcmd_cellmap->add_flag("-p,--preserve-contents",
 				    															"if set contents of previous cell map will be preserved"
 					    														" starting from the upper left corner");
-			config.subsubcmd_cellmap_clear = config.subcmd_cellmap->add_subcommand("clear", "clears map");
 		config.subcmd_colors = config.cmd_set
 																  ->add_subcommand("colors",
 																							     "modify number of states through new color set");
@@ -133,21 +132,19 @@ void CSIM::AppCLIEmulator::setCLI() {
 														->check(CLI::Range(RuleConfig1DTotalistic::RANGE_LIM.x,
 												 										   RuleConfig1DTotalistic::RANGE_LIM.y))
 														->required();
-				config.options_1d_totalistic.center_active = config.subsubcmd_rule_1dtotalistic
+				config.options_1d_totalistic.exclude_center = config.subsubcmd_rule_1dtotalistic
 						   ->add_flag("-e,--exclude-center",
 											    "if set then center cell won't be taken into account");
 				config.subsubcmd_rule_1dtotalistic
 						   ->add_option("-s,--survive-conditions",
 												 	  config.options_1d_totalistic.survival_conditions,
-														"array of sums which qualify cell for survival")
-														->required();
+														"array of sums which qualify cell for survival");
 				config.subsubcmd_rule_1dtotalistic
 						   ->add_option("-b,--birth-conditions",
 												    config.options_1d_totalistic.birth_conditions,
-														"array of sums which qualify cell for birth")
-														->required();
+														"array of sums which qualify cell for birth");
 			config.subsubcmd_rule_2dcyclic = config.subcmd_rule->add_subcommand("2dcyclic", "2d cyclic is"
-																																					"2 dimensional ca rule");
+																																					" 2 dimensional ca rule");
 				config.subsubcmd_rule_2dcyclic
 					->add_option("-r,--range", config.options_2d_cyclic.range,
 									 "describes range of the neighbourhood (0 ..<= 10)")
@@ -165,17 +162,44 @@ void CSIM::AppCLIEmulator::setCLI() {
 										 "if set then kernel will be moore type otherwise neumann type");
 				config.options_2d_cyclic.state_insensitive = config.subsubcmd_rule_2dcyclic
 					->add_flag("-s,--state-insensitive",
-										 "if set then all cells with state higher than 0 will be accumulated otherwise"
+										 "if set then all cells with state higher than 0 will be accumulated "
 										 "otherwise only cells with next state after processed cell's state "
 										 "will be accumulated");
+				config.options_2d_cyclic.exclude_center = config.subsubcmd_rule_2dcyclic
+					->add_flag("-e, --exclude-center", "if set than center/processed cell's state won't be"
+																						 " included in computation");
+
+		config.subsubcmd_rule_2dlife = config.subcmd_rule->add_subcommand("2dlife", "2d life is 2 "
+																																								"dimensional CA "
+																																								"rule");
+				config.options_2d_life.moore = config.subsubcmd_rule_2dlife
+					->add_flag("-m,--moore",
+										 "if set then kernel will be moore type otherwise neumann type");
+				config.options_2d_life.state_insensitive = config.subsubcmd_rule_2dlife
+						->add_flag("-S,--state-insensitive",
+											 "if set then all cells with state higher than 0 will be accumulated "
+											 "otherwise only cells with next state after processed cell's state "
+											 "will be accumulated");
+				config.options_2d_life.exclude_center = config.subsubcmd_rule_2dlife
+						->add_flag("-e, --exclude-center", "if set than center/processed cell's state won't be"
+																							 " included in computation");
+				config.subsubcmd_rule_2dlife
+						->add_option("-s,--survive-conditions",
+												 config.options_2d_life.survival_conditions,
+												 "array of sums which qualify cell for survival");
+				config.subsubcmd_rule_2dlife
+						->add_option("-b,--birth-conditions",
+												 config.options_2d_life.birth_conditions,
+												 "array of sums which qualify cell for birth");
 	config.subcmd_counter = config.cmd_set->add_subcommand("counter", "set value of FPS step counter");
 			config.subcmd_counter->add_option("-c,--counter", config.option_counter,
 																			  "value to which to count")
 																				->check(CLI::TypeValidator<std::uint32_t>())
 																				->required();
 	config.cmd_clear = this->parser.add_subcommand("clear", "clears CLI");
+		config.options_clear.clear_cli = config.cmd_clear->add_flag("-c,--cli", "clears CLI");
+		config.options_clear.clear_map = config.cmd_clear->add_flag("-m,--cellmap", "clears cellmap");
 	config.cmd_seed = this->parser.add_subcommand("seed", "seed cellmap with initial state");
-
 		config.cmd_seed->add_option("-x,--column", config.options_seed.x,
 															  "x coordinate of the seed center")
 										            ->check(
@@ -205,4 +229,6 @@ void CSIM::AppCLIEmulator::setCLI() {
 			config.options_seed.clip = config.cmd_seed->add_flag("-l,--clip",
 																"clip the seed area if out of bounds if not specified out of bounds"
 																" area will behave as if map has torus topology");
+	config.cmd_start = this->parser.add_subcommand("start", "starts stopped simulation");
+	config.cmd_stop = this->parser.add_subcommand("stop", "stops simulation until next start command");
 }

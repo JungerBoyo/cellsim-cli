@@ -31,12 +31,12 @@ ivec2 accessOffset(uint index) {
 
 ivec2 processPosition(ivec2 position) {
   if (position.x < 0) {
-    position.x = map_resolution.x - position.x;
+    position.x = map_resolution.x + position.x;
   } else if (position.x >= map_resolution.x) {
     position.x = position.x - map_resolution.x;
   }
   if (position.y < 0) {
-    position.y = map_resolution.y - position.y;
+    position.y = map_resolution.y + position.y;
   } else if (position.y >= map_resolution.y) {
     position.y = position.y - map_resolution.y;
   }
@@ -51,7 +51,7 @@ void main() {
       gl_GlobalInvocationID.x
   );
 
-  ivec2 base_position = ivec2(i % map_resolution.x, i / map_resolution.y);
+  ivec2 base_position = ivec2(i % map_resolution.x, i / map_resolution.x);
   int base_state = state_map_copy[i];
   int sum=0;
   if (state_insensitive == 1) {
@@ -80,7 +80,7 @@ void main() {
     }
   } else {
     if (sum >= threshold) {
-      state_map[i] = base_state + 1 >= state_count ? base_state : base_state + 1;
+      state_map[i] = base_state + 1 >= state_count ? 0 : base_state + 1;
     } else {
       state_map[i] = 0;
     }

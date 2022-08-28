@@ -46,13 +46,18 @@ void CSIM::Rule::setBaseConfig(BaseConfig config,
 
 
 void CSIM::Rule::setRuleConfig(std::shared_ptr<RuleConfig> rule_config) {
+	if (rule_config_->size() < rule_config->size()) {
+		glDeleteBuffers(1, &config_ubo_id_);
+		glCreateBuffers(1, &config_ubo_id_);
+		glNamedBufferStorage(config_ubo_id_,
+												 static_cast<GLsizeiptr>(rule_config->size()),
+												 rule_config->data(), GL_DYNAMIC_STORAGE_BIT);
+		glBindBufferBase(GL_UNIFORM_BUFFER, shconfig::CONFIG_UBO_BINDING_LOCATION, config_ubo_id_);
+	} else {
+		glNamedBufferSubData(config_ubo_id_, 0, static_cast<GLsizeiptr>(rule_config->size()),
+												 rule_config->data());
+	}
 	rule_config_ = std::move(rule_config); /// change config
-	/// rebind buffers to binding indices with new compute shader bound
-	rule_config_->getShader()->bind();
-	glBindBufferBase(GL_UNIFORM_BUFFER, shconfig::BASE_CONFIG_UBO_BINDING_LOCATION,
-									 base_config_ubo_id_);
-	glBindBufferBase(GL_UNIFORM_BUFFER, shconfig::CONFIG_UBO_BINDING_LOCATION, config_ubo_id_);
-	rule_config_->getShader()->unbind();
 }
 
 void CSIM::Rule::destroy() {
@@ -124,8 +129,8 @@ void CSIM::Rule2D::step(const CellMap &cell_map, std::int32_t state_count) noexc
 	}
 
 	glCopyNamedBufferSubData(cell_map.stateMapSsboId(), state_map_copy_ssbo_id_, 0, 0, size);
-	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
+	glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
 	/// dispatch for every cell on the map
 	glDispatchCompute(static_cast<GLuint>(config.map_resolution.x),
 										static_cast<GLuint>(config.map_resolution.y), 1);
