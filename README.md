@@ -1,7 +1,7 @@
 [![ci](https://github.com/JungerBoyo/CellSimRemake/actions/workflows/ci.yml/badge.svg)](https://github.com/JungerBoyo/CellSimRemake/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/JungerBoyo/CellSimRemake/branch/main/graph/badge.svg?token=18QM99KEWO)](https://codecov.io/gh/JungerBoyo/CellSimRemake)
 
-# CellSim 
+# cellsim-cli
 ## Brief
 App is able to carry out simulations of popular cellular automatas rules e.g. the ones from CA rules lexicon
 http://www.mirekw.com/ca/ca_rules.html. App is based on builtin CLI emulator implemented using ImGui library.
