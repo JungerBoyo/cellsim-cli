@@ -14,6 +14,8 @@
 #include <imgui/imgui_utils.hpp>
 #include <rules/rule_info_window.hpp>
 
+#include <cstring>
+
 /// TODO add clear color to cellmap
 
 CSIM::App::App(Window &window) : window_(window) {
