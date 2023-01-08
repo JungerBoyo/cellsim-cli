@@ -36,6 +36,7 @@ struct Window {
 	int getButtonState(int button_code);
 	float getTime();
 	std::tuple<int, int> getWindowSize();
+	std::tuple<float, float> getMousePos();
 
 	bool shouldClose();
 	void pollEvents();

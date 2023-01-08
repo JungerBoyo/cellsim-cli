@@ -4,7 +4,6 @@
 #include "cli_emulator/cellsim_cli_emulator.hpp"
 
 #include <project_config/config.hpp>
-#include <shconfig.hpp>
 #include <rules/rule_config.hpp>
 
 #include <fmt/format.h>

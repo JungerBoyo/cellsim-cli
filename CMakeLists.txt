@@ -14,7 +14,7 @@ include(${_project_options_SOURCE_DIR}/Index.cmake)
 
 ### set up project ###
 project(cellsim
-  VERSION 0.0.1
+  VERSION 0.0.2
   DESCRIPTION "C++ template project set up with general structure, tests (catch2), tools and CI"
   HOMEPAGE_URL "https://github.com/JungerBoyo/cpp-template-project"
   LANGUAGES C CXX
@@ -76,20 +76,13 @@ endif()
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
 #####################
 
-### testing ###
-if(ENABLE_TESTS)
-  enable_testing()
-  add_subdirectory(test)
-endif()
-###############
-
 ### package project ###
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION "./")
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/shaders/bin DESTINATION "shaders/")
 install(FILES ${PROJECT_SOURCE_DIR}/imgui.ini DESTINATION "./")
 
 set(CPACK_PACKAGE_FILE_NAME 
-  "${PROJECT_NAME}-${CMAKE_PROJECT_VERSION}-${GIT_SHORT_SHA}-${CMAKE_SYSTEM_NAME}-${CMAKE_BUILD_TYPE}-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}"
+  "${PROJECT_NAME}-${CMAKE_PROJECT_VERSION}-${GIT_SHORT_SHA}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_VERSION}-${CMAKE_BUILD_TYPE}-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}"
 )
 include(CPack)
 #######################

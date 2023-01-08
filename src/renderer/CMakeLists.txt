@@ -7,6 +7,7 @@ target_link_libraries(renderer_IMPL
   PRIVATE
     shaders_IMPL
     cellmap_IMPL
+    SHCONFIG
 )
 
 target_link_system_libraries(renderer_IMPL

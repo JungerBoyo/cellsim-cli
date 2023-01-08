@@ -1,4 +1,5 @@
 find_package(glad REQUIRED)
+find_package(lodepng REQUIRED)
 
 add_library(cellmap_IMPL STATIC cellmap.cpp texture_backed_framebuffer.cpp)
 target_link_libraries(cellmap_IMPL
@@ -6,14 +7,11 @@ target_link_libraries(cellmap_IMPL
     cellmap_INC
   PRIVATE
     shaders_IMPL
-)
-
-target_include_directories(cellmap_IMPL
-  PRIVATE
-    "${CMAKE_BINARY_DIR}/shaders"
+    SHCONFIG
 )
 
 target_link_system_libraries(cellmap_IMPL
   PRIVATE
     glad::glad
+    lodepng::lodepng
 )

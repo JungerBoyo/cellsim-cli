@@ -2,7 +2,6 @@
 // Created by reg on 8/5/22.
 //
 #include "window/window.hpp"
-#include <shconfig.hpp>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -40,8 +39,8 @@ CSIM::Window::Window(std::int32_t width, std::int32_t height, std::string_view t
 		: win_handle_{std::make_shared<WinNative>()},
 			user_data_(new UserData, [](UserData *ptr) { delete ptr; }) // NOLINT
 {
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, CSIM::shconfig::GLVERSION_MAJOR);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, CSIM::shconfig::GLVERSION_MINOR);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, GLVERSION_MAJOR);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, GLVERSION_MINOR);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	win_handle_->value = glfwCreateWindow(width, height, title.data(), nullptr, nullptr);
@@ -79,6 +78,13 @@ std::tuple<int, int> CSIM::Window::getWindowSize() {
 	int y{0};
 	glfwGetWindowSize(win_handle_->value, &x, &y);
 	return {x, y};
+}
+
+std::tuple<float, float> CSIM::Window::getMousePos() {
+	double x{.0};
+	double y{.0};
+	glfwGetCursorPos(win_handle_->value, &x, &y);
+	return {static_cast<float>(x), static_cast<float>(y)};
 }
 
 bool CSIM::Window::shouldClose() {

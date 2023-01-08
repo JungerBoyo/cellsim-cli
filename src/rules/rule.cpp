@@ -2,7 +2,6 @@
 // Created by reg on 7/29/22.
 //
 #include "rules/rule.hpp"
-#include "shconfig.hpp"
 #include <array>
 #include <glad/glad.h>
 
@@ -27,9 +26,9 @@ CSIM::Rule::Rule(std::shared_ptr<RuleConfig> rule_config)
 
 	/// binding buffers to binding indices
 	rule_config_->getShader()->bind();
-	glBindBufferBase(GL_UNIFORM_BUFFER, shconfig::BASE_CONFIG_UBO_BINDING_LOCATION,
+	glBindBufferBase(GL_UNIFORM_BUFFER, BASE_CONFIG_UBO_BINDING_LOCATION,
 									 base_config_ubo_id_);
-	glBindBufferBase(GL_UNIFORM_BUFFER, shconfig::CONFIG_UBO_BINDING_LOCATION, config_ubo_id_);
+	glBindBufferBase(GL_UNIFORM_BUFFER, CONFIG_UBO_BINDING_LOCATION, config_ubo_id_);
 	rule_config_->getShader()->unbind();
 }
 void CSIM::Rule::setBaseConfig(BaseConfig config, bool update_iteration) noexcept {
@@ -48,7 +47,7 @@ void CSIM::Rule::setRuleConfig(std::shared_ptr<RuleConfig> rule_config) {
 		glCreateBuffers(1, &config_ubo_id_);
 		glNamedBufferStorage(config_ubo_id_, static_cast<GLsizeiptr>(rule_config->size()),
 												 rule_config->data(), GL_DYNAMIC_STORAGE_BIT);
-		glBindBufferBase(GL_UNIFORM_BUFFER, shconfig::CONFIG_UBO_BINDING_LOCATION, config_ubo_id_);
+		glBindBufferBase(GL_UNIFORM_BUFFER, CONFIG_UBO_BINDING_LOCATION, config_ubo_id_);
 	} else {
 		glNamedBufferSubData(config_ubo_id_, 0, static_cast<GLsizeiptr>(rule_config->size()),
 												 rule_config->data());

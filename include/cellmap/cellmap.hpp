@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <vector>
+#include <filesystem>
 
 namespace CSIM {
 
@@ -44,6 +45,8 @@ struct CellMap {
 	[[nodiscard]] auto stateMapSsboId() const {
 		return state_map_ssbo_id_;
 	}
+
+	bool saveTextureToFile(const std::filesystem::path& ) const noexcept;
 
 	void generateOffsets() noexcept;
 

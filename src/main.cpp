@@ -11,8 +11,8 @@ int main() {
 		CSIM::Window::initWindowingSystem();
 
 		constexpr std::string_view title = "cellsim";
-		constexpr int width{640};
-		constexpr int height{480};
+		constexpr int width{940};
+		constexpr int height{680};
 
 #ifdef GLFW_DEBUG
 		CSIM::Window window(width, height, title,

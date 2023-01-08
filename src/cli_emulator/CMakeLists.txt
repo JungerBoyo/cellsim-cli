@@ -8,6 +8,7 @@ target_link_libraries(cli_emulator_IMPL
     cli_emulator_INC
   PRIVATE
     imgui_utils_IMPL
+    SHCONFIG
 )
 
 target_link_system_libraries(cli_emulator_IMPL

@@ -10,6 +10,7 @@ target_link_libraries(rule_config_IMPL
     rule_config_INC
   PRIVATE
     shaders_IMPL
+    SHCONFIG
 )
 
 target_link_libraries(rule_IMPL
@@ -17,11 +18,7 @@ target_link_libraries(rule_IMPL
     rule_INC
   PRIVATE
     rule_config_IMPL
-)
-
-target_include_directories(rule_IMPL
-  PRIVATE
-    "${CMAKE_BINARY_DIR}/shaders"
+    SHCONFIG
 )
 
 target_link_system_libraries(rule_IMPL PRIVATE glad::glad)

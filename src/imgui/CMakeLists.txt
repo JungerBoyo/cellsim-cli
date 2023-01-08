@@ -9,6 +9,7 @@ target_link_libraries(imgui_utils_IMPL
     imgui_utils_INC
   PRIVATE
     imgui_bindings_IMPL
+    SHCONFIG
 )
 
 target_link_system_libraries(imgui_utils_IMPL

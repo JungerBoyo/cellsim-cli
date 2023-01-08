@@ -3,13 +3,17 @@
 //
 
 #include "renderer/renderer.hpp"
-#include "shconfig.hpp"
 
 #include <algorithm>
 #include <glad/glad.h>
 
-CSIM::Renderer::Renderer(std::shared_ptr<Shader> render_shader, std::shared_ptr<Shader> grid_shader)
-		: render_shader_(std::move(render_shader)), grid_shader_(std::move(grid_shader)) {
+CSIM::Renderer::Renderer(
+		Vec2<int> win_size,
+		std::shared_ptr<Shader> render_shader,
+		std::shared_ptr<Shader> grid_shader) :
+	main_fbo_(win_size.x, win_size.y),
+	render_shader_(std::move(render_shader)), 
+	grid_shader_(std::move(grid_shader)) {
 
 	std::array<GLuint, 4> buffers; // NOLINT initialization through ptr
 	glCreateBuffers(buffers.size(), buffers.data());
@@ -30,9 +34,9 @@ CSIM::Renderer::Renderer(std::shared_ptr<Shader> render_shader, std::shared_ptr<
 	glBindVertexArray(vao_id_);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_);
 
-	glVertexAttribPointer(shconfig::IN_POSITION_LOCATION, 2, GL_FLOAT, GL_FALSE, 0,
+	glVertexAttribPointer(IN_POSITION_LOCATION, 2, GL_FLOAT, GL_FALSE, 0,
 												nullptr); // NOLINT stride=0, type=fvec2
-	glEnableVertexAttribArray(shconfig::IN_POSITION_LOCATION);
+	glEnableVertexAttribArray(IN_POSITION_LOCATION);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
@@ -40,15 +44,15 @@ CSIM::Renderer::Renderer(std::shared_ptr<Shader> render_shader, std::shared_ptr<
 	// set up ubos for ViewConfig and Colors
 	glNamedBufferStorage(view_config_ubo_id_, sizeof(ViewConfig), &view_config_,
 											 GL_DYNAMIC_STORAGE_BIT);
-	glBindBufferBase(GL_UNIFORM_BUFFER, shconfig::VIEW_CONFIG_UBO_BINDING_LOCATION,
+	glBindBufferBase(GL_UNIFORM_BUFFER, VIEW_CONFIG_UBO_BINDING_LOCATION,
 									 view_config_ubo_id_);
 	glNamedBufferStorage(colors_ubo_id_, static_cast<GLsizei>(colors_.size() * sizeof(Vec4<float>)),
 											 colors_.data(), GL_DYNAMIC_STORAGE_BIT);
-	glBindBufferBase(GL_UNIFORM_BUFFER, shconfig::COLORS_UBO_BINDING_LOCATION, colors_ubo_id_);
+	glBindBufferBase(GL_UNIFORM_BUFFER, COLORS_UBO_BINDING_LOCATION, colors_ubo_id_);
 }
 
 void CSIM::Renderer::setColors(const std::vector<Vec4<float>> &colors) {
-	color_count_ = std::clamp(colors.size(), static_cast<std::size_t>(0), shconfig::MAX_COLORS);
+	color_count_ = std::clamp(colors.size(), static_cast<std::size_t>(0), MAX_COLORS);
 	std::copy_n(colors.begin(), color_count_, colors_.begin());
 
 	glNamedBufferSubData(colors_ubo_id_, 0,
@@ -63,8 +67,17 @@ void CSIM::Renderer::updateView(Vec2<float> offset_vec, float scale_vec) noexcep
 }
 
 void CSIM::Renderer::draw(Vec2<int> win_size, const CellMap &cellmap) noexcept {
+	if (win_size.x <= 0 || win_size.y <= 0)	 {
+		return;
+	}
+
+	if (main_fbo_.width() != win_size.x || main_fbo_.height() != win_size.y) {
+		main_fbo_.resize(win_size.x, win_size.y);
+	}
+	main_fbo_.bind_framebuffer();
 	glClearColor(clear_color_.x, clear_color_.y, clear_color_.z, clear_color_.w);
 	glClear(GL_COLOR_BUFFER_BIT);
+
 	render_shader_->bind();
 	glBindVertexArray(vao_id_);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_id_);
@@ -88,6 +101,7 @@ void CSIM::Renderer::draw(Vec2<int> win_size, const CellMap &cellmap) noexcept {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		grid_shader_->unbind();
 	}
+	main_fbo_.unbind_framebuffer();
 
 	auto cellmap_fbo = cellmap.textureFbo();
 	cellmap_fbo.bind_framebuffer();
@@ -97,9 +111,9 @@ void CSIM::Renderer::draw(Vec2<int> win_size, const CellMap &cellmap) noexcept {
 	const auto scale = 2.f / static_cast<float>(cellmap_fbo.height());
 	ViewConfig cellmap_view_config{
 			.offset = {-1.f - scale * (-.5f),
-								 1.f - scale * .5f}, // NOLINT (-1.f, 1.f) = left upper corner
-																		 // (-.5f, .5f) = left upper corner
-																		 // of cell map
+						1.f - scale * .5f}, // NOLINT (-1.f, 1.f) = left upper corner
+											// (-.5f, .5f) = left upper corner
+											// of cell map
 			.scale = scale,
 			.aspect_ratio =
 					static_cast<float>(cellmap_fbo.width()) / static_cast<float>(cellmap_fbo.height())};

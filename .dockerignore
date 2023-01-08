@@ -1,7 +1,0 @@
-build/
-build_test/
-.vscode/
-.idea/
-shaders/bin/
-.gitignore
-*.code-workspace

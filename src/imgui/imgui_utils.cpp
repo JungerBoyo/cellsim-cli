@@ -3,7 +3,6 @@
 //
 
 #include "imgui/imgui_utils.hpp"
-#include "shconfig.hpp"
 
 #include <GLFW/glfw3.h>
 #include <exception>
@@ -15,11 +14,12 @@
 void ImGui::Init(void *win) {
 	IMGUI_CHECKVERSION();
 
-	const auto glsl_version = fmt::format("#version {}{}0 core", CSIM::shconfig::GLVERSION_MAJOR,
-																				CSIM::shconfig::GLVERSION_MINOR);
+	const auto glsl_version = fmt::format("#version {}{}0 core", GLVERSION_MAJOR, GLVERSION_MINOR);
 	if (ImGui::CreateContext() == nullptr) {
 		throw std::runtime_error("failed to create imgui context");
 	}
+	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
 	if (!ImGui_ImplGlfw_InitForOpenGL(static_cast<GLFWwindow *>(win), true)) {
 		throw std::runtime_error("ImGui_ImplGlfw_InitForOpenGL failed");
 	}

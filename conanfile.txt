@@ -1,11 +1,11 @@
 [requires]
 glad/0.1.36
-imgui/1.88
+imgui/cci.20220621+1.88.docking
 glfw/3.3.7
 spdlog/1.10.0
 cli11/2.2.0
 fmt/8.1.1
-catch2/2.13.9
+lodepng/cci.20200615
 
 [generators]
 cmake_find_package

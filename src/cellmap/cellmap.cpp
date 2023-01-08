@@ -2,10 +2,15 @@
 // Created by reg on 7/29/22.
 //
 #include "cellmap/cellmap.hpp"
-#include "shconfig.hpp"
+
 #include <algorithm>
 #include <array>
+
 #include <glad/glad.h>
+#include <lodepng.h>
+
+#include <future>
+#include <fstream>
 
 CSIM::CellMap::CellMap(std::size_t width, std::size_t height)
 		: width_(width), height_(height),
@@ -22,13 +27,13 @@ CSIM::CellMap::CellMap(std::size_t width, std::size_t height)
 	glNamedBufferStorage(instance_offsets_ssbo_id_,
 											 static_cast<GLsizei>(cell_offsets_.size() * sizeof(Vec2<float>)),
 											 cell_offsets_.data(), 0); // NOLINT no flags = readonly
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, shconfig::INSTANCE_OFFSETS_SSBO_BINDING_LOCATION,
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, INSTANCE_OFFSETS_SSBO_BINDING_LOCATION,
 									 instance_offsets_ssbo_id_);
 
 	glNamedBufferStorage(state_map_ssbo_id_,
 											 static_cast<GLsizei>(cell_states_.size() * sizeof(std::int32_t)),
 											 cell_states_.data(), GL_DYNAMIC_STORAGE_BIT);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, shconfig::STATE_MAP_SSBO_BINDING_LOCATION,
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, STATE_MAP_SSBO_BINDING_LOCATION,
 									 state_map_ssbo_id_);
 }
 
@@ -56,15 +61,21 @@ void CSIM::CellMap::seed(std::size_t x, std::size_t y, std::size_t range, bool r
 		} else {
 			begin_x = (static_cast<std::int64_t>(x) - static_cast<std::int64_t>(range)) %
 								static_cast<std::int64_t>(width_);
+			if (begin_x < 0) {
+				begin_x += static_cast<std::int64_t>(width_);
+			}
 			end_x = (static_cast<std::int64_t>(x) + static_cast<std::int64_t>(range) + 1) %
 							static_cast<std::int64_t>(width_);
 			begin_y = (static_cast<std::int64_t>(y) - static_cast<std::int64_t>(range)) %
 								static_cast<std::int64_t>(height_);
+			if (begin_y < 0) {
+				begin_y += static_cast<std::int64_t>(height_);
+			}
 			end_y = (static_cast<std::int64_t>(y) + static_cast<std::int64_t>(range) + 1) %
 							static_cast<std::int64_t>(height_);
 		}
-		for (y = begin_y; y != end_y; y = (y + 1) % (height_ + 1)) {
-			for (x = begin_x; x != end_x; x = (x + 1) % (width_ + 1)) {
+		for (y = begin_y; y != end_y; y = (y + 1) % (height_)) {
+			for (x = begin_x; x != end_x; x = (x + 1) % (width_)) {
 				cell_states_.at(x + y * width_) = INITIAL_LIFE_STATE;
 			}
 		}
@@ -163,12 +174,12 @@ void CSIM::CellMap::extend(std::size_t new_width, std::size_t new_height, bool p
 	glNamedBufferStorage(instance_offsets_ssbo_id_,
 											 static_cast<GLsizei>(cell_offsets_.size() * sizeof(Vec2<float>)),
 											 cell_offsets_.data(), 0); // NOLINT no flags = readonly
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, shconfig::INSTANCE_OFFSETS_SSBO_BINDING_LOCATION,
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, INSTANCE_OFFSETS_SSBO_BINDING_LOCATION,
 									 instance_offsets_ssbo_id_);
 	glNamedBufferStorage(state_map_ssbo_id_,
 											 static_cast<GLsizei>(cell_states_.size() * sizeof(std::int32_t)),
 											 cell_states_.data(), GL_DYNAMIC_STORAGE_BIT);
-	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, shconfig::STATE_MAP_SSBO_BINDING_LOCATION,
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, STATE_MAP_SSBO_BINDING_LOCATION,
 									 state_map_ssbo_id_);
 }
 
@@ -186,6 +197,52 @@ void CSIM::CellMap::generateOffsets() noexcept {
 		}
 	}
 }
+
+static std::future<void> saving_future;
+
+bool CSIM::CellMap::saveTextureToFile(const std::filesystem::path& path) const noexcept {
+	if (saving_future.valid()) {
+		saving_future.wait();
+	}
+	if (!std::filesystem::exists(path.parent_path()) || std::filesystem::exists(path) ||
+			!path.has_extension() || path.extension() != ".png") {
+		return false;
+	}
+	std::vector<unsigned char> pixels(width_ * height_ * 4);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo_.fbo_id_);
+	glReadPixels(
+		0, 0,
+		static_cast<std::int32_t>(width_),
+		static_cast<std::int32_t>(height_),
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		static_cast<void*>(pixels.data())
+	);
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+
+	saving_future = std::async(std::launch::async, [
+		img = std::move(pixels),
+		img_path = path,
+		img_width = width_,
+		img_height = height_] {
+
+		std::vector<unsigned char> img_reversed_in_y(img_width * img_height * 4);
+		for (std::size_t y{0}; y < img_height; ++y) {
+				for (std::size_t x{0}; x < 4 * img_width; x+=4) {
+					const auto row = y * img_width * 4;
+					const auto reversed_row = (img_height - 1 - y) * img_width * 4;
+					img_reversed_in_y[x + 0 + row] = img[x + 0 + reversed_row];
+					img_reversed_in_y[x + 1 + row] = img[x + 1 + reversed_row];
+					img_reversed_in_y[x + 2 + row] = img[x + 2 + reversed_row];
+					img_reversed_in_y[x + 3 + row] = img[x + 3 + reversed_row];
+				}
+		}
+		lodepng::encode(img_path.string(), img_reversed_in_y, img_width, img_height);
+	});
+
+	return true;
+}
+
 
 void CSIM::CellMap::destroy() noexcept {
 	fbo_.destroy();

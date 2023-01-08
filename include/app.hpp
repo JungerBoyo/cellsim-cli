@@ -10,7 +10,6 @@
 #include <rules/rule.hpp>
 #include <rules/rule_config.hpp>
 #include <shaders/shaders.hpp>
-#include <shconfig.hpp>
 #include <window/window.hpp>
 
 namespace CSIM {
@@ -21,9 +20,9 @@ struct App {
 	std::shared_ptr<Shader> render_shader_{};
 
 	Renderer renderer_{
-			std::make_shared<VFShader>(shconfig::VSH_RENDER_SHADER_PATH,
-																 shconfig::FSH_RENDER_SHADER_PATH),
-			std::make_shared<VFShader>(shconfig::VSH_GRID_SHADER_PATH, shconfig::FSH_GRID_SHADER_PATH)};
+			{std::get<0>(window_.getWindowSize()), std::get<1>(window_.getWindowSize())},
+			std::make_shared<VFShader>("shaders/bin/render_shader/vert.spv", "shaders/bin/render_shader/frag.spv"),
+			std::make_shared<VFShader>("shaders/bin/grid_shader/vert.spv", "shaders/bin/grid_shader/frag.spv")};
 	CellMap cell_map_{64, 64}; // NOLINT
 	AppCLIEmulator cli_emulator_{"cellsim cli", "cellular automata cli based simulation app",
 															 "cellsim"};
@@ -34,6 +33,7 @@ struct App {
 	std::int32_t frame_counter_{0};
 	float last_frame_time_{0.f};
 	bool simulation_stopped_{false};
+	bool is_viewport_win_focused_{false};
 
 	explicit App(Window &window);
 
